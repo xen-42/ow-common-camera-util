@@ -13,14 +13,12 @@ namespace CommonCameraUtil
     public class CommonCameraUtil : ModBehaviour
     {
         public static CommonCameraUtil Instance;
-        public static PlayerMeshHandler PlayerMeshHandler { get; private set; }
-        public static ToolMaterialHandler ToolMaterialHandler { get; private set; }
+        private static PlayerMeshHandler _playerMeshHandler;
+        private static ToolMaterialHandler _toolMaterialHandler;
+        private static CameraCreationHandler _cameraCreationHandler;
 
         private List<OWCamera> _customCameras = new List<OWCamera>();
         private bool _usingCustomCamera;
-
-        public UnityEvent PreInitialize = new UnityEvent();
-        public UnityEvent Initialize = new UnityEvent();
 
         public override object GetApi()
         {
@@ -37,41 +35,39 @@ namespace CommonCameraUtil
             // Patches
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
-            PlayerMeshHandler = new PlayerMeshHandler();
-            ToolMaterialHandler = new ToolMaterialHandler();
-            GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
+            _playerMeshHandler = new PlayerMeshHandler();
+            _toolMaterialHandler = new ToolMaterialHandler();
+            _cameraCreationHandler = new CameraCreationHandler();
 
-            Initialize.AddListener(Init);
+            GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         public void OnDestroy()
         {
-            PlayerMeshHandler?.OnDestroy();
-            ToolMaterialHandler?.OnDestroy();
+            _playerMeshHandler?.OnDestroy();
+            _toolMaterialHandler?.OnDestroy();
+            _cameraCreationHandler?.OnDestroy();
             GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
-
-            Initialize.RemoveListener(Init);
 
             SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
         private void Update()
         {
-            PlayerMeshHandler?.Update();
-            ToolMaterialHandler?.Update();
+            _playerMeshHandler?.Update();
+            _toolMaterialHandler?.Update();
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            PreInitialize.Invoke();
-            ModHelper.Events.Unity.FireOnNextUpdate(Initialize.Invoke);
+            ModHelper.Events.Unity.FireOnNextUpdate(Init);
         }
 
         private void Init()
         {
-            PlayerMeshHandler?.Init();
+            _playerMeshHandler?.Init();
         }
 
         private void OnSwitchActiveCamera(OWCamera camera)
@@ -94,6 +90,11 @@ namespace CommonCameraUtil
         public static bool UsingCustomCamera()
         {
             return Instance._usingCustomCamera;
+        }
+
+        public static bool IsCustomCamera(OWCamera camera)
+        {
+            return Instance._customCameras.Contains(camera);
         }
     }
 }

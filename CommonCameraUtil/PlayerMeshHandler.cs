@@ -157,7 +157,7 @@ namespace CommonCameraUtil
 
         private void OnSwitchActiveCamera(OWCamera camera)
         {
-            if(camera.name == "ThirdPersonCamera" || camera.name == "StaticCamera")
+            if(CommonCameraUtil.IsCustomCamera(camera))
             {
                 SetArmVisibility(true);
                 SetHeadVisible();
@@ -173,7 +173,10 @@ namespace CommonCameraUtil
         private void OnToolEquiped(PlayerTool _)
         {
             _isToolHeld = true;
-            if (CommonCameraUtil.UsingCustomCamera()) _setArmVisibleNextTick = true;
+            if (CommonCameraUtil.UsingCustomCamera())
+            {
+                _setArmVisibleNextTick = true;
+            }
         }
 
         private void OnToolUnequiped(PlayerTool _)

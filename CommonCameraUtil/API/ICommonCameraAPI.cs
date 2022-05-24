@@ -1,8 +1,11 @@
-﻿namespace CommonCameraUtil.API
+﻿using System;
+using UnityEngine;
+
+namespace CommonCameraUtil.API
 {
     public interface ICommonCameraAPI
     {
         void RegisterCustomCamera(OWCamera OWCamera);
-        OWCamera CreateCustomCamera(string name);
+        (OWCamera, Camera) CreateCustomCamera(string name);
     }
 }
