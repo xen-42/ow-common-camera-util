@@ -13,9 +13,10 @@ namespace CommonCameraUtil
     public class CommonCameraUtil : ModBehaviour
     {
         public static CommonCameraUtil Instance;
-        private static PlayerMeshHandler _playerMeshHandler;
-        private static ToolMaterialHandler _toolMaterialHandler;
-        private static CameraCreationHandler _cameraCreationHandler;
+
+        private PlayerMeshHandler _playerMeshHandler;
+        private ToolMaterialHandler _toolMaterialHandler;
+        private CameraCreationHandler _cameraCreationHandler;
 
         private List<OWCamera> _customCameras = new List<OWCamera>();
         private bool _usingCustomCamera;

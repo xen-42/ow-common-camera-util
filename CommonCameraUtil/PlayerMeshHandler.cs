@@ -21,10 +21,11 @@ namespace CommonCameraUtil
 
         private int _propID_Fade;
 
-        private GameObject suitArm;
-        private GameObject fleshArm;
-        private GameObject helmetMesh;
-        private GameObject head;
+        private GameObject _suitArm;
+        private GameObject _fleshArm;
+        private GameObject _helmetMesh;
+        private GameObject _helmet2D;
+        private GameObject _head;
 
         private AssetBundle assetBundle;
         private GameObject ghostPrefab;
@@ -33,24 +34,26 @@ namespace CommonCameraUtil
 
         public PlayerMeshHandler()
         {
-            GlobalMessenger<PlayerTool>.AddListener("OnEquipTool", new Callback<PlayerTool>(OnToolEquiped));
-            GlobalMessenger<PlayerTool>.AddListener("OnUnequipTool", new Callback<PlayerTool>(OnToolUnequiped));
-            GlobalMessenger.AddListener("RemoveHelmet", new Callback(OnRemoveHelmet));
-            GlobalMessenger.AddListener("PutOnHelmet", new Callback(OnPutOnHelmet));
-            GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", new Callback<OWCamera>(OnSwitchActiveCamera));
+            GlobalMessenger<PlayerTool>.AddListener("OnEquipTool", OnToolEquiped);
+            GlobalMessenger<PlayerTool>.AddListener("OnUnequipTool", OnToolUnequiped);
+            GlobalMessenger.AddListener("RemoveHelmet", OnRemoveHelmet);
+            GlobalMessenger.AddListener("PutOnHelmet", OnPutOnHelmet);
+            GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
         }
 
         public void OnDestroy()
         {
-            GlobalMessenger<PlayerTool>.RemoveListener("OnEquipTool", new Callback<PlayerTool>(OnToolEquiped));
-            GlobalMessenger<PlayerTool>.RemoveListener("OnUnequipTool", new Callback<PlayerTool>(OnToolUnequiped));
-            GlobalMessenger.RemoveListener("RemoveHelmet", new Callback(OnRemoveHelmet));
-            GlobalMessenger.RemoveListener("PutOnHelmet", new Callback(OnPutOnHelmet));
-            GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", new Callback<OWCamera>(OnSwitchActiveCamera));
+            GlobalMessenger<PlayerTool>.RemoveListener("OnEquipTool", OnToolEquiped);
+            GlobalMessenger<PlayerTool>.RemoveListener("OnUnequipTool", OnToolUnequiped);
+            GlobalMessenger.RemoveListener("RemoveHelmet", OnRemoveHelmet);
+            GlobalMessenger.RemoveListener("PutOnHelmet", OnPutOnHelmet);
+            GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
         }
 
         public void Init()
         {
+            _helmet2D = GameObject.Find("Helmet");
+
             try
             {
                 var campfire = GameObject.Find("/Moon_Body/Sector_THM/Interactables_THM/Effects_HEA_Campfire/Props_HEA_Campfire/Campfire_Flames");
@@ -157,14 +160,16 @@ namespace CommonCameraUtil
 
         private void OnSwitchActiveCamera(OWCamera camera)
         {
-            if(CommonCameraUtil.IsCustomCamera(camera))
+            if (CommonCameraUtil.IsCustomCamera(camera))
             {
+                RemoveHelmet(true);
                 SetArmVisibility(true);
                 SetHeadVisible();
                 if(_activeFireRenderer != null) _activeFireRenderer.enabled = inFire || fade > 0f;
             }
             else
             {
+                RemoveHelmet(false);
                 SetArmVisibility(!_isToolHeld);
                 if(_activeFireRenderer != null) _activeFireRenderer.enabled = false;
             }
@@ -185,20 +190,30 @@ namespace CommonCameraUtil
             SetArmVisibility(true);
         }
 
+        private void RemoveHelmet(bool visible)
+        {
+            if (_helmet2D != null)
+            {
+                _helmet2D.transform.Find("HelmetRoot/HelmetMesh/HUD_Helmet_v2/Helmet").transform.localScale = visible ? Vector3.one : Vector3.zero;
+                _helmet2D.transform.Find("HelmetRoot/HelmetMesh/HUD_Helmet_v2/HelmetFrame").transform.localScale = visible ? Vector3.one : Vector3.zero;
+                _helmet2D.transform.Find("HelmetRoot/HelmetMesh/HUD_Helmet_v2/Scarf").transform.localScale = visible ? Vector3.one : Vector3.zero;
+            }
+        }
+
         private void SetArmVisibility(bool visible)
         {
             try
             {
-                if (suitArm == null) suitArm = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_RightArm").gameObject;
-                if (fleshArm == null) fleshArm = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_RightArm").gameObject;
+                if (_suitArm == null) _suitArm = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_RightArm").gameObject;
+                if (_fleshArm == null) _fleshArm = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_RightArm").gameObject;
             }
             catch(Exception)
             {
                 Util.WriteWarning("Couldn't find arm");
             }
 
-            if(suitArm != null) suitArm.layer = visible ? 0 : 22;
-            if(fleshArm != null) fleshArm.layer = visible ? 0 : 22;
+            if(_suitArm != null) _suitArm.layer = visible ? 0 : 22;
+            if(_fleshArm != null) _fleshArm.layer = visible ? 0 : 22;
         }
 
         private void OnRemoveHelmet()
@@ -215,20 +230,20 @@ namespace CommonCameraUtil
         {
             if (Locator.GetPlayerSuit().IsWearingHelmet())
             {
-                if (helmetMesh == null)
+                if (_helmetMesh == null)
                 {
-                    helmetMesh = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_Helmet").gameObject;
-                    helmetMesh.layer = 0;
+                    _helmetMesh = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_Helmet").gameObject;
+                    _helmetMesh.layer = 0;
                 }
             }
             else
             {
-                if (head == null)
+                if (_head == null)
                 {
                     try
                     {
-                        head = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_Head").gameObject;
-                        head.layer = 0;
+                        _head = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_Head").gameObject;
+                        _head.layer = 0;
                     }
                     catch(Exception)
                     {
