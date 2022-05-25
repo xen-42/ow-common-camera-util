@@ -36,7 +36,3 @@ GlobalMessenger<OWCamera>.FireEvent("SwitchActiveCamera", OWCamera);
 ```
 
 Keeping a reference to the previous camera is useful so that when you want to disable your camera you can set it back to use the previous one.
-
-### Credits
-
-Uses [free controller and keyboard prompts](https://thoseawesomeguys.com/prompts/) from Xelu, just like stock Outer Wilds.
