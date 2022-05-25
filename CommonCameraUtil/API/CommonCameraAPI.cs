@@ -1,11 +1,7 @@
-﻿using OWML.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using UnityEngine;
-using UnityEngine.PostProcessing;
+using UnityEngine.Events;
+using static CommonCameraUtil.API.ICommonCameraAPI;
 
 namespace CommonCameraUtil.API
 {
@@ -19,6 +15,16 @@ namespace CommonCameraUtil.API
         public void RegisterCustomCamera(OWCamera OWCamera)
         {
             CommonCameraUtil.Instance.RegisterCustomCamera(OWCamera);
+        }
+
+        public UnityEvent<PlayerTool> EquipTool()
+        {
+            return CommonCameraUtil.Instance.EquipTool;
+        }
+
+        public UnityEvent<PlayerTool> UnequipTool()
+        {
+            return CommonCameraUtil.Instance.UnequipTool;
         }
     }
 }

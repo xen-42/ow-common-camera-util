@@ -23,21 +23,22 @@ namespace CommonCameraUtil
 
         public ToolMaterialHandler()
         {
-            GlobalMessenger.AddListener("OnRetrieveProbe", new Callback(OnRetrieveProbe));
-            GlobalMessenger<PlayerTool>.AddListener("OnEquipTool", new Callback<PlayerTool>(OnToolEquiped));
-            GlobalMessenger<PlayerTool>.AddListener("OnUnequipTool", new Callback<PlayerTool>(OnToolUnequiped));
-            GlobalMessenger.AddListener("EnterDreamWorld", new Callback(OnEnterDreamWorld));
-            GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", new Callback<OWCamera>(OnSwitchActiveCamera));
+            CommonCameraUtil.Instance.EquipTool.AddListener(OnToolEquiped);
+            CommonCameraUtil.Instance.UnequipTool.AddListener(OnToolUnequiped);
+
+            GlobalMessenger.AddListener("OnRetrieveProbe", OnRetrieveProbe);
+            GlobalMessenger.AddListener("EnterDreamWorld", OnEnterDreamWorld);
+            GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
         }
 
         public void OnDestroy()
         {
-            GlobalMessenger.RemoveListener("OnRetrieveProbe", new Callback(OnRetrieveProbe));
-            GlobalMessenger<PlayerTool>.RemoveListener("OnEquipTool", new Callback<PlayerTool>(OnToolEquiped));
-            GlobalMessenger<PlayerTool>.RemoveListener("OnEquipTool", new Callback<PlayerTool>(OnToolEquiped));
-            GlobalMessenger<PlayerTool>.RemoveListener("OnUnequipTool", new Callback<PlayerTool>(OnToolUnequiped));
-            GlobalMessenger.RemoveListener("EnterDreamWorld", new Callback(OnEnterDreamWorld));
-            GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", new Callback<OWCamera>(OnSwitchActiveCamera));
+            CommonCameraUtil.Instance.EquipTool.RemoveListener(OnToolEquiped);
+            CommonCameraUtil.Instance.UnequipTool.RemoveListener(OnToolUnequiped);
+
+            GlobalMessenger.RemoveListener("OnRetrieveProbe", OnRetrieveProbe);
+            GlobalMessenger.RemoveListener("EnterDreamWorld", OnEnterDreamWorld);
+            GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
         }
 
         public void OnRetrieveProbe()

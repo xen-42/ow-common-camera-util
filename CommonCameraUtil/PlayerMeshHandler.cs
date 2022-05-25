@@ -34,8 +34,9 @@ namespace CommonCameraUtil
 
         public PlayerMeshHandler()
         {
-            GlobalMessenger<PlayerTool>.AddListener("OnEquipTool", OnToolEquiped);
-            GlobalMessenger<PlayerTool>.AddListener("OnUnequipTool", OnToolUnequiped);
+            CommonCameraUtil.Instance.EquipTool.AddListener(OnToolEquiped);
+            CommonCameraUtil.Instance.UnequipTool.AddListener(OnToolUnequiped);
+
             GlobalMessenger.AddListener("RemoveHelmet", OnRemoveHelmet);
             GlobalMessenger.AddListener("PutOnHelmet", OnPutOnHelmet);
             GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
@@ -43,8 +44,9 @@ namespace CommonCameraUtil
 
         public void OnDestroy()
         {
-            GlobalMessenger<PlayerTool>.RemoveListener("OnEquipTool", OnToolEquiped);
-            GlobalMessenger<PlayerTool>.RemoveListener("OnUnequipTool", OnToolUnequiped);
+            CommonCameraUtil.Instance.EquipTool.RemoveListener(OnToolEquiped);
+            CommonCameraUtil.Instance.UnequipTool.RemoveListener(OnToolUnequiped);
+
             GlobalMessenger.RemoveListener("RemoveHelmet", OnRemoveHelmet);
             GlobalMessenger.RemoveListener("PutOnHelmet", OnPutOnHelmet);
             GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
@@ -52,7 +54,7 @@ namespace CommonCameraUtil
 
         public void Init()
         {
-            _helmet2D = GameObject.Find("Helmet");
+            _helmet2D = GameObject.FindObjectOfType<HUDHelmetAnimator>().gameObject;
 
             try
             {
@@ -138,6 +140,8 @@ namespace CommonCameraUtil
             {
                 Util.WriteWarning("Couldn't load custom assets.");
             }
+
+            SetHeadVisible();
         }
 
         private void OnHazardsUpdated()
@@ -162,16 +166,21 @@ namespace CommonCameraUtil
         {
             if (CommonCameraUtil.IsCustomCamera(camera))
             {
-                RemoveHelmet(true);
+                SetHelmet(false);
                 SetArmVisibility(true);
+                ShowReticule(false);
+
                 SetHeadVisible();
-                if(_activeFireRenderer != null) _activeFireRenderer.enabled = inFire || fade > 0f;
+
+                if (_activeFireRenderer != null) _activeFireRenderer.enabled = inFire || fade > 0f;
             }
             else
             {
-                RemoveHelmet(false);
+                SetHelmet(true);
                 SetArmVisibility(!_isToolHeld);
-                if(_activeFireRenderer != null) _activeFireRenderer.enabled = false;
+                ShowReticule(true);
+
+                if (_activeFireRenderer != null) _activeFireRenderer.enabled = false;
             }
         }
 
@@ -190,7 +199,7 @@ namespace CommonCameraUtil
             SetArmVisibility(true);
         }
 
-        private void RemoveHelmet(bool visible)
+        private void SetHelmet(bool visible)
         {
             if (_helmet2D != null)
             {
@@ -250,6 +259,20 @@ namespace CommonCameraUtil
                         Util.WriteWarning("Couldn't find players head.");
                     }
                 }
+            }
+        }
+
+        private void ShowReticule(bool visible)
+        {
+            GameObject reticule = GameObject.Find("Reticule");
+            if (visible)
+            {
+                reticule.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+            }
+            else
+            {
+                reticule.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
+                reticule.GetComponent<Canvas>().worldCamera = Locator.GetPlayerCamera().mainCamera;
             }
         }
 

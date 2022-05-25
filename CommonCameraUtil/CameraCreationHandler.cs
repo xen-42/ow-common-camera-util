@@ -58,6 +58,8 @@ namespace CommonCameraUtil
             var OWCamera = cameraObject.AddComponent<OWCamera>();
             OWCamera.renderSkybox = true;
 
+            CommonCameraUtil.Instance.RegisterCustomCamera(OWCamera);
+
             _uninitializedCameras.Add(OWCamera);
 
             return (OWCamera, camera);
@@ -97,8 +99,6 @@ namespace CommonCameraUtil
                 cameraObject.name = name;
 
                 cameraObject.SetActive(true);
-
-                CommonCameraUtil.Instance.RegisterCustomCamera(OWCamera);
             }
             catch (Exception ex)
             {

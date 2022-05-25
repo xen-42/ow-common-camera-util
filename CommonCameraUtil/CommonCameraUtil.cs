@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using static CommonCameraUtil.API.ICommonCameraAPI;
 
 namespace CommonCameraUtil
 {
@@ -20,6 +21,10 @@ namespace CommonCameraUtil
 
         private List<OWCamera> _customCameras = new List<OWCamera>();
         private bool _usingCustomCamera;
+
+        public class CameraEvent<T> : UnityEvent<T> { }
+        public UnityEvent<PlayerTool> EquipTool = new CameraEvent<PlayerTool>();
+        public UnityEvent<PlayerTool> UnequipTool = new CameraEvent<PlayerTool>();
 
         public override object GetApi()
         {
