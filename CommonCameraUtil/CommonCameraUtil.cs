@@ -1,13 +1,12 @@
 ﻿using CommonCameraUtil.API;
+using CommonCameraUtil.Handlers;
 using HarmonyLib;
-using OWML.Common;
 using OWML.ModHelper;
 using OWML.Utils;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using static CommonCameraUtil.API.ICommonCameraAPI;
 
 namespace CommonCameraUtil
 {

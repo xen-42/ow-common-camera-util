@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using UnityEngine;
 
-namespace CommonCameraUtil
+namespace CommonCameraUtil.Handlers
 {
     public class ToolMaterialHandler
     {
@@ -68,7 +64,7 @@ namespace CommonCameraUtil
             if (!resizingExemptTools.Contains(tool.name)) tool.transform.localScale = new Vector3(2, 2, 2);
         }
 
-        public void OnToolUnequiped(PlayerTool tool) 
+        public void OnToolUnequiped(PlayerTool tool)
         {
             // Put them back to normal when unequiping
             //SetToolMaterials(false);
@@ -77,7 +73,7 @@ namespace CommonCameraUtil
 
         public void OnSwitchActiveCamera(OWCamera camera)
         {
-            if(camera.name == "ThirdPersonCamera" || camera.name == "StaticCamera")
+            if (camera.name == "ThirdPersonCamera" || camera.name == "StaticCamera")
             {
                 SetToolMaterials(true);
             }
@@ -117,7 +113,7 @@ namespace CommonCameraUtil
 
         public void Update()
         {
-            if(_heldTool is ItemTool && Locator.GetToolModeSwapper().GetItemCarryTool() == null)
+            if (_heldTool is ItemTool && Locator.GetToolModeSwapper().GetItemCarryTool() == null)
             {
                 // We dropped it?
                 SetToolMaterials(false);

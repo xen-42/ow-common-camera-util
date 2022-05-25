@@ -1,7 +1,6 @@
-﻿using System;
+﻿using CommonCameraUtil.Handlers;
 using UnityEngine;
 using UnityEngine.Events;
-using static CommonCameraUtil.API.ICommonCameraAPI;
 
 namespace CommonCameraUtil.API
 {

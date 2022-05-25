@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
-namespace CommonCameraUtil
+namespace CommonCameraUtil.Handlers
 {
     public class PlayerMeshHandler
     {
@@ -75,7 +71,7 @@ namespace CommonCameraUtil
                 _dreamFireRenderer.transform.localPosition = new Vector3(0, -1.6f, -0.25f);
                 _dreamFireRenderer.enabled = false;
             }
-            catch(Exception) { }
+            catch (Exception) { }
 
             _hazardDetector = Locator.GetPlayerController().GetComponentInChildren<HazardDetector>();
             _hazardDetector.OnHazardsUpdated += OnHazardsUpdated;
@@ -136,7 +132,7 @@ namespace CommonCameraUtil
 
                 GameObject.Destroy(ghost);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Util.WriteWarning("Couldn't load custom assets.");
             }
@@ -151,11 +147,11 @@ namespace CommonCameraUtil
             _activeFireRenderer = (InGreenFire && _dreamFireRenderer != null) ? _dreamFireRenderer : _fireRenderer;
 
             if (_inFire && !_activeFireRenderer.enabled)
-            {   
+            {
                 inFire = true;
                 _activeFireRenderer.material.SetFloat(_propID_Fade, fade);
-                if(CommonCameraUtil.UsingCustomCamera()) _activeFireRenderer.enabled = true;
-            } 
+                if (CommonCameraUtil.UsingCustomCamera()) _activeFireRenderer.enabled = true;
+            }
             else
             {
                 inFire = false;
@@ -216,13 +212,13 @@ namespace CommonCameraUtil
                 if (_suitArm == null) _suitArm = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_RightArm").gameObject;
                 if (_fleshArm == null) _fleshArm = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_RightArm").gameObject;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Util.WriteWarning("Couldn't find arm");
             }
 
-            if(_suitArm != null) _suitArm.layer = visible ? 0 : 22;
-            if(_fleshArm != null) _fleshArm.layer = visible ? 0 : 22;
+            if (_suitArm != null) _suitArm.layer = visible ? 0 : 22;
+            if (_fleshArm != null) _fleshArm.layer = visible ? 0 : 22;
         }
 
         private void OnRemoveHelmet()
@@ -254,7 +250,7 @@ namespace CommonCameraUtil
                         _head = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_Head").gameObject;
                         _head.layer = 0;
                     }
-                    catch(Exception)
+                    catch (Exception)
                     {
                         Util.WriteWarning("Couldn't find players head.");
                     }
@@ -284,7 +280,7 @@ namespace CommonCameraUtil
                 _setArmVisibleNextTick = false;
             }
 
-            if(_activeFireRenderer != null && _activeFireRenderer.enabled)
+            if (_activeFireRenderer != null && _activeFireRenderer.enabled)
             {
                 fade = Mathf.MoveTowards(fade, inFire ? 1f : 0f, Time.deltaTime / (inFire ? 1f : 0.5f));
                 _activeFireRenderer.material.SetAlpha(fade);
