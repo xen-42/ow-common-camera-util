@@ -91,7 +91,12 @@ namespace CommonCameraUtil.Handlers
                     _postProcessiong.profile = profile;
                 }
 
+                // CopyFrom will overwrite the transform stuff which is annoying
+                var rot = camera.transform.rotation;
+                var pos = camera.transform.position;
                 camera.CopyFrom(Locator.GetPlayerCamera().mainCamera);
+                camera.transform.rotation = rot;
+                camera.transform.position = pos;
 
                 cameraObject.name = name;
 
