@@ -1,4 +1,5 @@
 ﻿using CommonCameraUtil.API;
+using CommonCameraUtil.Components;
 using CommonCameraUtil.Handlers;
 using HarmonyLib;
 using OWML.ModHelper;
@@ -17,6 +18,7 @@ namespace CommonCameraUtil
         private PlayerMeshHandler _playerMeshHandler;
         private ToolMaterialHandler _toolMaterialHandler;
         private CameraCreationHandler _cameraCreationHandler;
+        private HeadRotation _headRotationHandler;
 
         private List<OWCamera> _customCameras = new List<OWCamera>();
         private bool _usingCustomCamera;
@@ -43,6 +45,7 @@ namespace CommonCameraUtil
             _playerMeshHandler = new PlayerMeshHandler();
             _toolMaterialHandler = new ToolMaterialHandler();
             _cameraCreationHandler = new CameraCreationHandler();
+            _headRotationHandler = new HeadRotation();
 
             GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
@@ -73,6 +76,8 @@ namespace CommonCameraUtil
         private void Init()
         {
             _playerMeshHandler?.Init();
+
+            Locator.GetPlayerBody().gameObject.AddComponent<HeadRotation>();
         }
 
         private void OnSwitchActiveCamera(OWCamera camera)
