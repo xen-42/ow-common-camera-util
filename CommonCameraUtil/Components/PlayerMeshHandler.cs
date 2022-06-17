@@ -21,7 +21,7 @@ namespace CommonCameraUtil.Components
         // Hand holding marshmallow stick
         private MeshRenderer _roastingStickArm, _roastingStickNoSuit;
 
-        private AssetBundle assetBundle;
+        private static AssetBundle assetBundle;
         private GameObject ghostPrefab;
 
         public static bool InGreenFire;
@@ -51,7 +51,7 @@ namespace CommonCameraUtil.Components
             _roastingStickArm = Util.Find("Player_Body/RoastingSystem/Stick_Root/Stick_Pivot/Stick_Tip/Props_HEA_RoastingStick/RoastingStick_Arm").GetComponent<MeshRenderer>();
             _roastingStickNoSuit = Util.Find("Player_Body/RoastingSystem/Stick_Root/Stick_Pivot/Stick_Tip/Props_HEA_RoastingStick/RoastingStick_Arm_NoSuit").GetComponent<MeshRenderer>();
 
-            _helmet2D = GameObject.FindObjectOfType<HUDHelmetAnimator>().gameObject;
+            _helmet2D = GameObject.FindObjectOfType<HUDHelmetAnimator>()?.gameObject;
 
             try
             {
