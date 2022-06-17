@@ -8,7 +8,7 @@ namespace CommonCameraUtil.API
     {
         public (OWCamera, Camera) CreateCustomCamera(string name)
         {
-            return CameraCreationHandler.Instance.CreateCustomCamera(name);
+            return CommonCameraUtil.Instance.CreateCustomCamera(name);
         }
 
         public void RegisterCustomCamera(OWCamera OWCamera)

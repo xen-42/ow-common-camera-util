@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CommonCameraUtil.Handlers
 {
-    public class ToolMaterialHandler
+    public class ToolMaterialHandler : MonoBehaviour
     {
         private PlayerTool _heldTool;
 
@@ -17,7 +17,7 @@ namespace CommonCameraUtil.Handlers
 
         private bool _checkToolEquipNextTick = false;
 
-        public ToolMaterialHandler()
+        public void Awake()
         {
             CommonCameraUtil.Instance.EquipTool.AddListener(OnToolEquiped);
             CommonCameraUtil.Instance.UnequipTool.AddListener(OnToolUnequiped);

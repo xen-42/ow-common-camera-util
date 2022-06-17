@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEngine;
 
-namespace CommonCameraUtil.Handlers
+namespace CommonCameraUtil.Components
 {
-    public class PlayerMeshHandler
+    public class PlayerMeshHandler : MonoBehaviour
     {
         private bool _isToolHeld = false;
         private bool _setArmVisibleNextTick = false;
@@ -28,7 +28,7 @@ namespace CommonCameraUtil.Handlers
 
         public static bool InGreenFire = false;
 
-        public PlayerMeshHandler()
+        public void Awake()
         {
             CommonCameraUtil.Instance.EquipTool.AddListener(OnToolEquiped);
             CommonCameraUtil.Instance.UnequipTool.AddListener(OnToolUnequiped);
@@ -48,7 +48,7 @@ namespace CommonCameraUtil.Handlers
             GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
         }
 
-        public void Init()
+        public void Start()
         {
             _helmet2D = GameObject.FindObjectOfType<HUDHelmetAnimator>().gameObject;
 
@@ -80,7 +80,11 @@ namespace CommonCameraUtil.Handlers
 
             try
             {
-                if (assetBundle == null) assetBundle = CommonCameraUtil.Instance.ModHelper.Assets.LoadBundle("assets/ghost-hatchling");
+                if (assetBundle == null)
+                {
+                    assetBundle = CommonCameraUtil.Instance.ModHelper.Assets.LoadBundle("assets/ghost-hatchling");
+                }
+
                 if (ghostPrefab == null)
                 {
                     ghostPrefab = assetBundle.LoadAsset<GameObject>("Assets/Player Ghost/Ghost.prefab");
