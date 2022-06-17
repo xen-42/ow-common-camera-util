@@ -8,25 +8,23 @@ namespace CommonCameraUtil.Components
         private bool _isToolHeld = false;
         private bool _setArmVisibleNextTick = false;
 
-        private MeshRenderer _fireRenderer;
-        private MeshRenderer _dreamFireRenderer;
-        private MeshRenderer _activeFireRenderer;
+        private MeshRenderer _fireRenderer, _dreamFireRenderer, _activeFireRenderer;
         private HazardDetector _hazardDetector;
         private float fade = 0f;
         private bool inFire = false;
 
         private int _propID_Fade;
 
-        private GameObject _suitArm;
-        private GameObject _fleshArm;
-        private GameObject _helmetMesh;
-        private GameObject _helmet2D;
-        private GameObject _head;
+        // Body parts
+        private GameObject _suitArm, _fleshArm, _helmetMesh, _helmet2D, _head;
+
+        // Hand holding marshmallow stick
+        private MeshRenderer _roastingStickArm, _roastingStickNoSuit;
 
         private AssetBundle assetBundle;
         private GameObject ghostPrefab;
 
-        public static bool InGreenFire = false;
+        public static bool InGreenFire;
 
         public void Awake()
         {
@@ -50,6 +48,9 @@ namespace CommonCameraUtil.Components
 
         public void Start()
         {
+            _roastingStickArm = Util.Find("Player_Body/RoastingSystem/Stick_Root/Stick_Pivot/Stick_Tip/Props_HEA_RoastingStick/RoastingStick_Arm").GetComponent<MeshRenderer>();
+            _roastingStickNoSuit = Util.Find("Player_Body/RoastingSystem/Stick_Root/Stick_Pivot/Stick_Tip/Props_HEA_RoastingStick/RoastingStick_Arm_NoSuit").GetComponent<MeshRenderer>();
+
             _helmet2D = GameObject.FindObjectOfType<HUDHelmetAnimator>().gameObject;
 
             try
@@ -108,7 +109,6 @@ namespace CommonCameraUtil.Components
                 head.transform.localRotation = Quaternion.Euler(0, 0, 90);
                 head.transform.localScale = 1.25f * Vector3.one;
                 head.transform.localPosition = new Vector3(2, -1, 0);
-
 
                 var torso = ghost.transform.Find("Torso");
                 torso.transform.parent = backRoot;
@@ -172,6 +172,9 @@ namespace CommonCameraUtil.Components
 
                 SetHeadVisible();
 
+                _roastingStickArm.enabled = false;
+                _roastingStickNoSuit.enabled = false;
+
                 if (_activeFireRenderer != null) _activeFireRenderer.enabled = inFire || fade > 0f;
             }
             else
@@ -179,6 +182,9 @@ namespace CommonCameraUtil.Components
                 SetHelmet(true);
                 SetArmVisibility(!_isToolHeld);
                 ShowReticule(true);
+
+                _roastingStickArm.enabled = true;
+                _roastingStickNoSuit.enabled = true;
 
                 if (_activeFireRenderer != null) _activeFireRenderer.enabled = false;
             }
