@@ -5,6 +5,7 @@ using OWML.ModHelper;
 using OWML.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
@@ -59,14 +60,11 @@ namespace CommonCameraUtil
 
             _uninitializedCameras.Clear();
 
-            ModHelper.Events.Unity.FireOnNextUpdate(Init);
-        }
-
-        private void Init()
-        {
-            Locator.GetPlayerBody().gameObject.AddComponent<PlayerMeshHandler>();
-            Locator.GetPlayerBody().gameObject.AddComponent<HeadRotation>();
-            Locator.GetPlayerBody().gameObject.AddComponent<RoastingStickAnim>();
+            // Can't use locator yet because it isnt set up yet
+            var player = GameObject.Find("Player_Body");
+            player.AddComponent<PlayerMeshHandler>();
+            player.AddComponent<HeadRotation>();
+            player.AddComponent<RoastingStickAnim>();
         }
 
         private void OnSwitchActiveCamera(OWCamera camera)
@@ -105,7 +103,7 @@ namespace CommonCameraUtil
             var OWCamera = cameraObject.AddComponent<OWCamera>();
             OWCamera.renderSkybox = true;
 
-            CommonCameraUtil.Instance.RegisterCustomCamera(OWCamera);
+            RegisterCustomCamera(OWCamera);
 
             _uninitializedCameras.Add(OWCamera);
 
