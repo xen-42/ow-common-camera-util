@@ -15,14 +15,14 @@ namespace CommonCameraUtil.Patches
         [HarmonyPatch(typeof(RoastingStickController), nameof(RoastingStickController.OnEnterRoastingMode))]
         public static void RoastingStickController_OnEnterRoastingMode()
         {
-            RoastingStickIK.IsRoasting = true;
+            RoastingStickAnim.IsRoasting = true;
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RoastingStickController), nameof(RoastingStickController.OnExitRoastingMode))]
         public static void RoastingStickController_OnExitRoastingMode()
         {
-            RoastingStickIK.IsRoasting = false;
+            RoastingStickAnim.IsRoasting = false;
         }
     }
 }

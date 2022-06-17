@@ -66,7 +66,7 @@ namespace CommonCameraUtil
         {
             Locator.GetPlayerBody().gameObject.AddComponent<PlayerMeshHandler>();
             Locator.GetPlayerBody().gameObject.AddComponent<HeadRotation>();
-            Locator.GetPlayerBody().gameObject.AddComponent<RoastingStickIK>();
+            Locator.GetPlayerBody().gameObject.AddComponent<RoastingStickAnim>();
         }
 
         private void OnSwitchActiveCamera(OWCamera camera)
