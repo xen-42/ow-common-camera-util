@@ -53,11 +53,6 @@ namespace CommonCameraUtil
             SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
-        private void Update()
-        {
-
-        }
-
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (scene.name != "SolarSystem" && scene.name != "EyeOfTheUniverse") return;
@@ -71,6 +66,7 @@ namespace CommonCameraUtil
         {
             Locator.GetPlayerBody().gameObject.AddComponent<PlayerMeshHandler>();
             Locator.GetPlayerBody().gameObject.AddComponent<HeadRotation>();
+            Locator.GetPlayerBody().gameObject.AddComponent<RoastingStickIK>();
         }
 
         private void OnSwitchActiveCamera(OWCamera camera)
