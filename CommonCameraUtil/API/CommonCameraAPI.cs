@@ -1,28 +1,19 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 
-namespace CommonCameraUtil.API
+namespace CommonCameraUtil.API;
+
+public class CommonCameraAPI : ICommonCameraAPI
 {
-    public class CommonCameraAPI : ICommonCameraAPI
-    {
-        public (OWCamera, Camera) CreateCustomCamera(string name)
-        {
-            return CommonCameraUtil.Instance.CreateCustomCamera(name);
-        }
+    public (OWCamera, Camera) CreateCustomCamera(string name) => 
+        CommonCameraUtil.Instance.CreateCustomCamera(name);
 
-        public void RegisterCustomCamera(OWCamera OWCamera)
-        {
-            CommonCameraUtil.Instance.RegisterCustomCamera(OWCamera);
-        }
+    public void RegisterCustomCamera(OWCamera OWCamera) => 
+        CommonCameraUtil.Instance.RegisterCustomCamera(OWCamera);
 
-        public UnityEvent<PlayerTool> EquipTool()
-        {
-            return CommonCameraUtil.Instance.EquipTool;
-        }
+    public UnityEvent<PlayerTool> EquipTool() => 
+        CommonCameraUtil.Instance.EquipTool;
 
-        public UnityEvent<PlayerTool> UnequipTool()
-        {
-            return CommonCameraUtil.Instance.UnequipTool;
-        }
-    }
+    public UnityEvent<PlayerTool> UnequipTool() => 
+        CommonCameraUtil.Instance.UnequipTool;
 }

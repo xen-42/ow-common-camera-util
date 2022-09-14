@@ -1,108 +1,92 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace CommonCameraUtil.Components
+namespace CommonCameraUtil.Components;
+
+public class RoastingStickAnim : MonoBehaviour
 {
-    public class RoastingStickAnim : MonoBehaviour
+    public static bool IsRoasting;
+    private Transform _roastingStick;
+    private Animator _playerAnimator;
+
+    private Transform _shoulder, _elbow, _hand;
+
+    private Quaternion _elbowBaseRot, _shoulderBaseRot;
+    private Vector3 _handOffset, _elbowOffset;
+
+    private RoastingStickController _controller;
+
+    private float _armLength;
+
+    public Vector3 offset;
+
+    private void Awake()
     {
-        public static bool IsRoasting;
-        private Transform _roastingStick;
-        private Animator _playerAnimator;
+        _playerAnimator = gameObject.transform.Find("Traveller_HEA_Player_v2").GetComponent<Animator>();
 
-        private Transform _shoulder, _elbow, _hand;
+        _roastingStick = Util.Find("Player_Body/RoastingSystem/Stick_Root/Stick_Pivot/Stick_Tip").transform;
 
-        private Quaternion _elbowBaseRot, _shoulderBaseRot;
-        private Vector3 _handOffset, _elbowOffset;
+        _hand = _playerAnimator.GetBoneTransform(HumanBodyBones.RightHand);
+        _elbow = _playerAnimator.GetBoneTransform(HumanBodyBones.RightLowerArm);
+        _shoulder = _playerAnimator.GetBoneTransform(HumanBodyBones.RightUpperArm);
 
-        private RoastingStickController _controller;
+        _elbowBaseRot = _elbow.localRotation;
+        _shoulderBaseRot = _shoulder.localRotation;
 
-        private float _armLength;
+        _handOffset = _elbow.InverseTransformPoint(_hand.position);
+        _elbowOffset = _shoulder.InverseTransformPoint(_elbow.position);
 
-        public Vector3 offset;
+        _controller = gameObject.GetComponentInChildren<RoastingStickController>();
 
-        private GameObject _debugShape;
+        GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
+    }
 
-        private void Awake()
+    private void Start()
+    {
+        _armLength = (_hand.position - _elbow.position).magnitude;
+    }
+
+    private void OnDestroy()
+    {
+        GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
+    }
+
+    public void OnSwitchActiveCamera(OWCamera camera)
+    {
+        if (CommonCameraUtil.UsingCustomCamera())
         {
-            _playerAnimator = gameObject.transform.Find("Traveller_HEA_Player_v2").GetComponent<Animator>();
+            _controller._stickMinZ = 1.5f;
+            _controller._stickMaxZ = 2.1f;
 
-            _roastingStick = Util.Find("Player_Body/RoastingSystem/Stick_Root/Stick_Pivot/Stick_Tip").transform;
-
-            _hand = _playerAnimator.GetBoneTransform(HumanBodyBones.RightHand);
-            _elbow = _playerAnimator.GetBoneTransform(HumanBodyBones.RightLowerArm);
-            _shoulder = _playerAnimator.GetBoneTransform(HumanBodyBones.RightUpperArm);
-
-            _elbowBaseRot = _elbow.localRotation;
-            _shoulderBaseRot = _shoulder.localRotation;
-
-            _handOffset = _elbow.InverseTransformPoint(_hand.position);
-            _elbowOffset = _shoulder.InverseTransformPoint(_elbow.position);
-
-            _controller = gameObject.GetComponentInChildren<RoastingStickController>();
-
-
-
-            GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
-
-            _debugShape = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            _debugShape.transform.localScale = Vector3.one * 0.1f;
-            GameObject.Destroy(_debugShape.GetComponent<Collider>());
+            _controller.transform.localPosition = new Vector3(0.3f, 0.15f, 0.04f);
         }
-
-        private void Start()
+        else
         {
-            _armLength = (_hand.position - _elbow.position).magnitude;
+            _controller._stickMinZ = 0.75f;
+            _controller._stickMaxZ = 2f;
+
+            _controller.transform.localPosition = new Vector3(0, 0.4f, 0);
         }
+    }
 
-        private void OnDestroy()
-        {
-            GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
-        }
+    private void LateUpdate()
+    {
+        if (!IsRoasting || !CommonCameraUtil.UsingCustomCamera()) return;
 
-        public void OnSwitchActiveCamera(OWCamera camera)
-        {
-            if (CommonCameraUtil.UsingCustomCamera())
-            {
-                _controller._stickMinZ = 1.5f;
-                _controller._stickMaxZ = 2.1f;
+        _elbow.transform.localRotation = Quaternion.FromToRotation(_handOffset.normalized, _elbow.InverseTransformPoint(_roastingStick.position).normalized) * _elbowBaseRot;
 
-                _controller.transform.localPosition = new Vector3(0.3f, 0.15f, 0.04f);
-            }
-            else
-            {
-                _controller._stickMinZ = 0.75f;
-                _controller._stickMaxZ = 2f;
+        // Closest distance from elbow to stick
+        var closest = Util.ProjectPointLine(_elbow.position, _roastingStick.position, _roastingStick.position - _roastingStick.forward * 4f);
 
-                _controller.transform.localPosition = new Vector3(0, 0.4f, 0);
-            }
-        }
+        var handle = closest + _roastingStick.forward * _armLength + _roastingStick.TransformVector(offset);
 
-        private void LateUpdate()
-        {
-            if (!IsRoasting || !CommonCameraUtil.UsingCustomCamera()) return;
+        var elbowPos = handle + (_elbow.position - handle).normalized * _armLength;
 
-            _elbow.transform.localRotation = Quaternion.FromToRotation(_handOffset.normalized, _elbow.InverseTransformPoint(_roastingStick.position).normalized) * _elbowBaseRot;
+        _shoulder.transform.localRotation = Quaternion.FromToRotation(_elbowOffset.normalized, _shoulder.InverseTransformPoint(elbowPos).normalized) * _shoulderBaseRot;
+        _elbow.transform.position = elbowPos;
+        _hand.transform.position = handle;
 
-            // Closest distance from elbow to stick
-            var closest = Util.ProjectPointLine(_elbow.position, _roastingStick.position, _roastingStick.position - _roastingStick.forward * 4f);
-
-            var handle = closest + _roastingStick.forward * _armLength + _roastingStick.TransformVector(offset);
-
-            var elbowPos = handle + (_elbow.position - handle).normalized * _armLength;
-
-            _shoulder.transform.localRotation = Quaternion.FromToRotation(_elbowOffset.normalized, _shoulder.InverseTransformPoint(elbowPos).normalized) * _shoulderBaseRot;
-            _elbow.transform.position = elbowPos;
-            _hand.transform.position = handle;
-
-            _debugShape.transform.position = handle;
-
-            var head = _playerAnimator.GetBoneTransform(HumanBodyBones.Head);
-            head.LookAt(_roastingStick, _playerAnimator.transform.up);
-            head.localRotation *= Quaternion.Euler(0, 90, 270);
-        }
+        var head = _playerAnimator.GetBoneTransform(HumanBodyBones.Head);
+        head.LookAt(_roastingStick, _playerAnimator.transform.up);
+        head.localRotation *= Quaternion.Euler(0, 90, 270);
     }
 }
