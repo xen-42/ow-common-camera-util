@@ -25,7 +25,7 @@ public class ToolMaterialHandler : MonoBehaviour
         GlobalMessenger.AddListener("OnRetrieveProbe", OnRetrieveProbe);
         GlobalMessenger.AddListener("EnterDreamWorld", OnEnterDreamWorld);
         GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
-    }
+	}
 
     public void OnDestroy()
     {
@@ -73,7 +73,7 @@ public class ToolMaterialHandler : MonoBehaviour
 
     public void OnSwitchActiveCamera(OWCamera camera)
     {
-        if (CommonCameraUtil.IsCustomCamera(camera))
+        if (CommonCameraUtil.UsingCustomCamera())
         {
             SetToolMaterials(true);
         }

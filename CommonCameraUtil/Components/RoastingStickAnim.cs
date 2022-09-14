@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace CommonCameraUtil.Components;
 
@@ -24,8 +19,6 @@ public class RoastingStickAnim : MonoBehaviour
 
     public Vector3 offset;
 
-    private GameObject _debugShape;
-
     private void Awake()
     {
         _playerAnimator = gameObject.transform.Find("Traveller_HEA_Player_v2").GetComponent<Animator>();
@@ -44,13 +37,7 @@ public class RoastingStickAnim : MonoBehaviour
 
         _controller = gameObject.GetComponentInChildren<RoastingStickController>();
 
-
-
         GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
-
-        _debugShape = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        _debugShape.transform.localScale = Vector3.one * 0.1f;
-        GameObject.Destroy(_debugShape.GetComponent<Collider>());
     }
 
     private void Start()
@@ -97,8 +84,6 @@ public class RoastingStickAnim : MonoBehaviour
         _shoulder.transform.localRotation = Quaternion.FromToRotation(_elbowOffset.normalized, _shoulder.InverseTransformPoint(elbowPos).normalized) * _shoulderBaseRot;
         _elbow.transform.position = elbowPos;
         _hand.transform.position = handle;
-
-        _debugShape.transform.position = handle;
 
         var head = _playerAnimator.GetBoneTransform(HumanBodyBones.Head);
         head.LookAt(_roastingStick, _playerAnimator.transform.up);

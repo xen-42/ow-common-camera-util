@@ -19,6 +19,7 @@ public class CommonCameraUtil : ModBehaviour
     public static CommonCameraUtil Instance;
 
     private List<OWCamera> _customCameras = new ();
+
     private bool _usingCustomCamera;
 
     public class CameraEvent<T> : UnityEvent<T> { }
@@ -77,14 +78,14 @@ public class CommonCameraUtil : ModBehaviour
         }
 
         _usingCustomCamera = _customCameras.Contains(camera);
-    }
+	}
 
     public void RegisterCustomCamera(OWCamera camera)
     {
         // We add our camera to the list of cameras in daydream so it shows the sky correctly too
         try
         {
-            ModHelper.Interaction.GetMod("xen.DayDream").GetValue<List<OWCamera>>("Cameras").Add(camera);
+            ModHelper.Interaction.TryGetMod("xen.DayDream").GetValue<List<OWCamera>>("Cameras").Add(camera);
         }
         catch { }
 
@@ -157,13 +158,7 @@ public class CommonCameraUtil : ModBehaviour
         }
     }
 
-    public static bool UsingCustomCamera()
-    {
-        return Instance._usingCustomCamera;
-    }
+    public static bool UsingCustomCamera() => Instance._usingCustomCamera;
 
-    public static bool IsCustomCamera(OWCamera camera)
-    {
-        return Instance._customCameras.Contains(camera);
-    }
+    public static bool IsCustomCamera(OWCamera camera) => Instance._customCameras.Contains(camera);
 }
