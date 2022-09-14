@@ -22,7 +22,7 @@ public interface ICommonCameraAPI
 
 Then to use the API from another class:
 ```cs
-var CommonCameraAPI = ModHelper.Interaction.GetModApi<ICommonCameraAPI>("xen.CommonCameraUtility");
+var CommonCameraAPI = ModHelper.Interaction.TryGetModApi<ICommonCameraAPI>("xen.CommonCameraUtility");
 ```
 
 If you want to manually set up the camera yourself, be sure to call `RegisterCustomCamera` on it. However it's easier to just use `CreateCustomCamera` and the utility will set it up for you. Also includes some helpful events to hook on to.
