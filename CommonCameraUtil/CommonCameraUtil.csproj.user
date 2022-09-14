@@ -1,5 +1,5 @@
 ﻿<Project>
   <PropertyGroup>
-    <OutputPath>$(AppData)\OuterWildsModManager\OWML\Mods\xen.CommonCameraUtil</OutputPath>
+    <OutputPath>$(AppData)\OuterWildsModManager\OWML\Mods\xen.CommonCameraUtility</OutputPath>
   </PropertyGroup>
 </Project>
