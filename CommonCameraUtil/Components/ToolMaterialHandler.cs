@@ -73,7 +73,7 @@ namespace CommonCameraUtil.Handlers
 
         public void OnSwitchActiveCamera(OWCamera camera)
         {
-            if (camera.name == "ThirdPersonCamera" || camera.name == "StaticCamera")
+            if (CommonCameraUtil.IsCustomCamera(camera))
             {
                 SetToolMaterials(true);
             }
