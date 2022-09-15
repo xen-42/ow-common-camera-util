@@ -1,5 +1,7 @@
 # Outer Wilds Common Camera Utility
 
+![common camera utility thumbnail](https://user-images.githubusercontent.com/22628069/190283897-380af8ee-2e51-47f2-bdb7-5c4dcfe282da.png)
+
 A utility mod for setting up cameras in Outer Wilds. Also implements some QOL changes for third person perspectives:
 - Adds ghost model in dream world
 - Stops arm from disappearing when using tools
