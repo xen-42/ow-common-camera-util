@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/amazingalek/owml/master/schemas/manifest_schema.json",
   "filename": "CommonCameraUtil.dll",
   "author": "xen",
   "name": "Common Camera Utility",

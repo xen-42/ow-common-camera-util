@@ -29,7 +29,7 @@ public class CommonCameraUtil : ModBehaviour
 
     private Dictionary<OWCamera, Action<OWCamera>> _uninitializedCameras = new ();
 
-    private StackList<OWCamera> _customCameraStack = new();
+    public StackList<OWCamera> CameraStack { get; private set; } = new();
 
     private bool _fireEventNextTick = false;
     private OWCamera _nextCamera = null;
@@ -51,14 +51,14 @@ public class CommonCameraUtil : ModBehaviour
 
         GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+		SceneManager.sceneLoaded += OnSceneLoaded;
+	}
 
     public void OnDestroy()
     {
         GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+		SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -68,7 +68,7 @@ public class CommonCameraUtil : ModBehaviour
 		_nextCamera = null;
 		_fireEventNextTick = false;
 
-		_customCameraStack.Clear();
+		CameraStack.Clear();
 		_uninitializedCameras.Clear();
 
         // Can't use locator yet because it isnt set up yet
@@ -88,10 +88,15 @@ public class CommonCameraUtil : ModBehaviour
             _uninitializedCameras.Remove(camera);
         }
 
-        if (_customCameras.Contains(camera))
+        if (camera.name == "RemoteViewerCamera" || camera.name == "MapCamera")
+        {
+			CameraStack.Add(camera);
+			_usingCustomCamera = false;
+		}
+        else if (_customCameras.Contains(camera))
         {
             _usingCustomCamera = true;
-            _customCameraStack.Add(camera);
+            CameraStack.Add(camera);
 		}
         else
         {
@@ -99,7 +104,11 @@ public class CommonCameraUtil : ModBehaviour
         }
 	}
 
-    public void RegisterCustomCamera(OWCamera camera)
+    public void RemoveCamera(OWCamera camera) => CameraStack.Remove(camera);
+
+    public void OnExitMapView() => _customCameras.Remove(Locator.GetMapController()._mapCamera);
+
+	public void RegisterCustomCamera(OWCamera camera)
     {
         // We add our camera to the list of cameras in daydream so it shows the sky correctly too
         try
@@ -179,11 +188,11 @@ public class CommonCameraUtil : ModBehaviour
 
     public void ExitCamera(OWCamera OWCamera)
     {
-        _customCameraStack.Remove(OWCamera);
+        CameraStack.Remove(OWCamera);
 
         if (Locator.GetActiveCamera() == OWCamera)
         {
-            var nextCamera = _customCameraStack.Peek();
+            var nextCamera = CameraStack.Peek();
             if (nextCamera == null) nextCamera = Locator.GetPlayerCamera();
 
 			GlobalMessenger<OWCamera>.FireEvent("SwitchActiveCamera", nextCamera);
