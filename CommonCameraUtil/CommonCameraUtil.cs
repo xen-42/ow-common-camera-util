@@ -6,6 +6,7 @@ using OWML.ModHelper;
 using OWML.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
@@ -26,7 +27,12 @@ public class CommonCameraUtil : ModBehaviour
     public UnityEvent<PlayerTool> EquipTool = new CameraEvent<PlayerTool>();
     public UnityEvent<PlayerTool> UnequipTool = new CameraEvent<PlayerTool>();
 
-    private List<OWCamera> _uninitializedCameras = new ();
+    private Dictionary<OWCamera, Action<OWCamera>> _uninitializedCameras = new ();
+
+    private StackList<OWCamera> _customCameraStack = new();
+
+    private bool _fireEventNextTick = false;
+    private OWCamera _nextCamera = null;
 
     public override object GetApi()
     {
@@ -59,7 +65,11 @@ public class CommonCameraUtil : ModBehaviour
     {
         if (scene.name != "SolarSystem" && scene.name != "EyeOfTheUniverse") return;
 
-        _uninitializedCameras.Clear();
+		_nextCamera = null;
+		_fireEventNextTick = false;
+
+		_customCameraStack.Clear();
+		_uninitializedCameras.Clear();
 
         // Can't use locator yet because it isnt set up yet
         var player = GameObject.Find("Player_Body");
@@ -71,13 +81,22 @@ public class CommonCameraUtil : ModBehaviour
 
     private void OnSwitchActiveCamera(OWCamera camera)
     {
-        if (_uninitializedCameras.Contains(camera))
+        if (_uninitializedCameras.ContainsKey(camera))
         {
             InitCustomCamera(camera.name, camera, camera.mainCamera, camera.gameObject);
+            _uninitializedCameras[camera]?.Invoke(camera);
             _uninitializedCameras.Remove(camera);
         }
 
-        _usingCustomCamera = _customCameras.Contains(camera);
+        if (_customCameras.Contains(camera))
+        {
+            _usingCustomCamera = true;
+            _customCameraStack.Add(camera);
+		}
+        else
+        {
+            _usingCustomCamera = false;
+        }
 	}
 
     public void RegisterCustomCamera(OWCamera camera)
@@ -92,7 +111,7 @@ public class CommonCameraUtil : ModBehaviour
         _customCameras.Add(camera);
     }
 
-    public (OWCamera, Camera) CreateCustomCamera(string name)
+    public (OWCamera, Camera) CreateCustomCamera(string name, Action<OWCamera> postInit = null)
     {
         Util.Write($"Creating custom camera [{name}]");
 
@@ -107,7 +126,7 @@ public class CommonCameraUtil : ModBehaviour
 
         RegisterCustomCamera(OWCamera);
 
-        _uninitializedCameras.Add(OWCamera);
+        _uninitializedCameras.Add(OWCamera, postInit);
 
         return (OWCamera, camera);
     }
@@ -158,7 +177,54 @@ public class CommonCameraUtil : ModBehaviour
         }
     }
 
-    public static bool UsingCustomCamera() => Instance._usingCustomCamera;
+    public void ExitCamera(OWCamera OWCamera)
+    {
+        _customCameraStack.Remove(OWCamera);
+
+        if (Locator.GetActiveCamera() == OWCamera)
+        {
+            var nextCamera = _customCameraStack.Peek();
+            if (nextCamera == null) nextCamera = Locator.GetPlayerCamera();
+
+			GlobalMessenger<OWCamera>.FireEvent("SwitchActiveCamera", nextCamera);
+			OWCamera.mainCamera.enabled = false;
+			nextCamera.mainCamera.enabled = true;
+		}
+    }
+
+    public void EnterCamera(OWCamera OWCamera)
+    {
+        var currentCamera = Locator.GetActiveCamera();
+
+        if (currentCamera != OWCamera)
+		{
+            try
+            {
+				GlobalMessenger<OWCamera>.FireEvent("SwitchActiveCamera", OWCamera);
+			}
+            catch(Exception)
+            {
+                _fireEventNextTick = true;
+                _nextCamera = OWCamera;
+			}
+
+			currentCamera.mainCamera.enabled = false;
+			OWCamera.mainCamera.enabled = true;
+		}
+	}
+
+    public void Update()
+    {
+        if (_fireEventNextTick)
+        {
+			GlobalMessenger<OWCamera>.FireEvent("SwitchActiveCamera", _nextCamera);
+            _nextCamera = null;
+            _fireEventNextTick = false;
+		}
+    }
+
+
+	public static bool UsingCustomCamera() => Instance._usingCustomCamera;
 
     public static bool IsCustomCamera(OWCamera camera) => Instance._customCameras.Contains(camera);
 }
