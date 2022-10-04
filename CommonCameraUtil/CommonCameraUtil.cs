@@ -92,7 +92,7 @@ public class CommonCameraUtil : ModBehaviour
 			CameraStack.Add(camera);
 			_usingCustomCamera = false;
 		}
-        else if (camera.name == "RemoteViewerCamera" || _customCameras.Contains(camera))
+        else if (_customCameras.Contains(camera))
         {
             _usingCustomCamera = true;
             CameraStack.Add(camera);
