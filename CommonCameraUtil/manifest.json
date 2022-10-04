@@ -4,6 +4,6 @@
   "author": "xen",
   "name": "Common Camera Utility",
   "uniqueName": "xen.CommonCameraUtility",
-  "version": "1.2.0",
-  "owmlVersion": "2.6.0"
+  "version": "1.2.1",
+  "owmlVersion": "2.7.2"
 }
