@@ -17,195 +17,207 @@ namespace CommonCameraUtil;
 
 public class CommonCameraUtil : ModBehaviour
 {
-    public static CommonCameraUtil Instance;
+	public static CommonCameraUtil Instance;
 
-    private List<OWCamera> _customCameras = new ();
+	private List<OWCamera> _customCameras = new();
 
-    private bool _usingCustomCamera;
+	private bool _usingCustomCamera;
 
-    public class CameraEvent<T> : UnityEvent<T> { }
-    public UnityEvent<PlayerTool> EquipTool = new CameraEvent<PlayerTool>();
-    public UnityEvent<PlayerTool> UnequipTool = new CameraEvent<PlayerTool>();
+	public class CameraEvent<T> : UnityEvent<T> { }
+	public UnityEvent<PlayerTool> EquipTool = new CameraEvent<PlayerTool>();
+	public UnityEvent<PlayerTool> UnequipTool = new CameraEvent<PlayerTool>();
 
-    private Dictionary<OWCamera, Action<OWCamera>> _uninitializedCameras = new ();
+	private Dictionary<OWCamera, Action<OWCamera>> _uninitializedCameras = new();
 
-    private StackList<OWCamera> _customCameraStack = new();
+	public StackList<OWCamera> CameraStack { get; private set; } = new();
 
-    private bool _fireEventNextTick = false;
-    private OWCamera _nextCamera = null;
+	private bool _fireEventNextTick = false;
+	private OWCamera _nextCamera = null;
+	private OWCamera _currentCamera = null;
 
-    public override object GetApi()
-    {
-        return new CommonCameraAPI();
-    }
+	public override object GetApi()
+	{
+		return new CommonCameraAPI();
+	}
 
-    private void Awake()
-    {
-        Instance = this;
-    }
+	private void Awake()
+	{
+		Instance = this;
+	}
 
-    private void Start()
-    {
-        // Patches
-        Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+	private void Start()
+	{
+		// Patches
+		Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
-        GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
+		GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+		SceneManager.sceneLoaded += OnSceneLoaded;
+	}
 
-    public void OnDestroy()
-    {
-        GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
+	public void OnDestroy()
+	{
+		GlobalMessenger<OWCamera>.RemoveListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
+		SceneManager.sceneLoaded -= OnSceneLoaded;
+	}
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (scene.name != "SolarSystem" && scene.name != "EyeOfTheUniverse") return;
+	private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+	{
+		if (scene.name != "SolarSystem" && scene.name != "EyeOfTheUniverse") return;
 
 		_nextCamera = null;
 		_fireEventNextTick = false;
 
-		_customCameraStack.Clear();
+		CameraStack.Clear();
 		_uninitializedCameras.Clear();
 
-        // Can't use locator yet because it isnt set up yet
-        var player = GameObject.Find("Player_Body");
-        player.AddComponent<PlayerMeshHandler>();
-        player.AddComponent<HeadRotation>();
-        player.AddComponent<RoastingStickAnim>();
-        player.AddComponent<ToolMaterialHandler>();
-    }
-
-    private void OnSwitchActiveCamera(OWCamera camera)
-    {
-        if (_uninitializedCameras.ContainsKey(camera))
-        {
-            InitCustomCamera(camera.name, camera, camera.mainCamera, camera.gameObject);
-            _uninitializedCameras[camera]?.Invoke(camera);
-            _uninitializedCameras.Remove(camera);
-        }
-
-        if (_customCameras.Contains(camera))
-        {
-            _usingCustomCamera = true;
-            _customCameraStack.Add(camera);
-		}
-        else
-        {
-            _usingCustomCamera = false;
-        }
+		// Can't use locator yet because it isnt set up yet
+		var player = GameObject.Find("Player_Body");
+		player.AddComponent<PlayerMeshHandler>();
+		player.AddComponent<HeadRotation>();
+		player.AddComponent<RoastingStickAnim>();
+		player.AddComponent<ToolMaterialHandler>();
 	}
 
-    public void RegisterCustomCamera(OWCamera camera)
-    {
-        // We add our camera to the list of cameras in daydream so it shows the sky correctly too
-        try
-        {
-            ModHelper.Interaction.TryGetMod("xen.DayDream").GetValue<List<OWCamera>>("Cameras").Add(camera);
-        }
-        catch { }
+	private void OnSwitchActiveCamera(OWCamera camera)
+	{
+		if (_uninitializedCameras.ContainsKey(camera))
+		{
+			InitCustomCamera(camera.name, camera, camera.mainCamera, camera.gameObject);
+			_uninitializedCameras[camera]?.Invoke(camera);
+			_uninitializedCameras.Remove(camera);
+		}
 
-        _customCameras.Add(camera);
-    }
+		if (camera.name == "MapCamera")
+		{
+			CameraStack.Add(camera);
+			_usingCustomCamera = false;
+		}
+		else if (camera.name == "RemoteViewerCamera" || _customCameras.Contains(camera))
+		{
+			_usingCustomCamera = true;
+			CameraStack.Add(camera);
+		}
+		else
+		{
+			_usingCustomCamera = false;
+		}
 
-    public (OWCamera, Camera) CreateCustomCamera(string name, Action<OWCamera> postInit = null)
-    {
-        Util.Write($"Creating custom camera [{name}]");
+		_currentCamera = camera;
+	}
 
-        var cameraObject = new GameObject(name);
-        cameraObject.SetActive(false);
+	public void RemoveCamera(OWCamera camera) => CameraStack.Remove(camera);
 
-        var camera = cameraObject.AddComponent<Camera>();
-        camera.enabled = false;
+	public void OnExitMapView() => _customCameras.Remove(Locator.GetMapController()._mapCamera);
 
-        var OWCamera = cameraObject.AddComponent<OWCamera>();
-        OWCamera.renderSkybox = true;
+	public void RegisterCustomCamera(OWCamera camera)
+	{
+		// We add our camera to the list of cameras in daydream so it shows the sky correctly too
+		try
+		{
+			ModHelper.Interaction.TryGetMod("xen.DayDream").GetValue<List<OWCamera>>("Cameras").Add(camera);
+		}
+		catch { }
 
-        RegisterCustomCamera(OWCamera);
+		_customCameras.Add(camera);
+	}
 
-        _uninitializedCameras.Add(OWCamera, postInit);
+	public (OWCamera, Camera) CreateCustomCamera(string name, Action<OWCamera> postInit = null)
+	{
+		Util.Write($"Creating custom camera [{name}]");
 
-        return (OWCamera, camera);
-    }
+		var cameraObject = new GameObject(name);
+		cameraObject.SetActive(false);
 
-    private void InitCustomCamera(string name, OWCamera OWCamera, Camera camera, GameObject cameraObject)
-    {
-        Util.Write($"Initializing custom camera [{OWCamera?.name}]");
+		var camera = cameraObject.AddComponent<Camera>();
+		camera.enabled = false;
 
-        try
-        {
-            cameraObject.SetActive(false);
+		var OWCamera = cameraObject.AddComponent<OWCamera>();
+		OWCamera.renderSkybox = true;
 
-            var downSampleShader = Locator.GetPlayerCamera()?.gameObject?.GetComponent<FlashbackScreenGrabImageEffect>()?._downsampleShader;
-            if (downSampleShader != null)
-            {
-                var temp = cameraObject.AddComponent<FlashbackScreenGrabImageEffect>();
-                temp._downsampleShader = downSampleShader;
-            }
+		RegisterCustomCamera(OWCamera);
 
-            var fogShader = Locator.GetPlayerCamera()?.gameObject?.GetComponent<PlanetaryFogImageEffect>()?.fogShader;
-            if (fogShader != null)
-            {
-                var _image = cameraObject.AddComponent<PlanetaryFogImageEffect>();
-                _image.fogShader = fogShader;
-            }
+		_uninitializedCameras.Add(OWCamera, postInit);
 
-            var profile = Locator.GetPlayerCamera()?.gameObject?.GetComponent<PostProcessingBehaviour>()?.profile;
-            if (profile != null)
-            {
-                var _postProcessiong = cameraObject.AddComponent<PostProcessingBehaviour>();
-                _postProcessiong.profile = profile;
-            }
+		return (OWCamera, camera);
+	}
 
-            // CopyFrom will overwrite the transform stuff which is annoying
-            var rot = camera.transform.rotation;
-            var pos = camera.transform.position;
-            camera.CopyFrom(Locator.GetPlayerCamera().mainCamera);
-            camera.transform.rotation = rot;
-            camera.transform.position = pos;
+	private void InitCustomCamera(string name, OWCamera OWCamera, Camera camera, GameObject cameraObject)
+	{
+		Util.Write($"Initializing custom camera [{OWCamera?.name}]");
 
-            cameraObject.name = name;
+		try
+		{
+			cameraObject.SetActive(false);
 
-            cameraObject.SetActive(true);
-        }
-        catch (Exception ex)
-        {
-            Util.WriteError($"Could not initialize camera [{OWCamera?.name}] : {ex.Message}, {ex.StackTrace}");
-        }
-    }
+			var downSampleShader = Locator.GetPlayerCamera()?.gameObject?.GetComponent<FlashbackScreenGrabImageEffect>()?._downsampleShader;
+			if (downSampleShader != null)
+			{
+				var temp = cameraObject.AddComponent<FlashbackScreenGrabImageEffect>();
+				temp._downsampleShader = downSampleShader;
+			}
 
-    public void ExitCamera(OWCamera OWCamera)
-    {
-        _customCameraStack.Remove(OWCamera);
+			var fogShader = Locator.GetPlayerCamera()?.gameObject?.GetComponent<PlanetaryFogImageEffect>()?.fogShader;
+			if (fogShader != null)
+			{
+				var _image = cameraObject.AddComponent<PlanetaryFogImageEffect>();
+				_image.fogShader = fogShader;
+			}
 
-        if (Locator.GetActiveCamera() == OWCamera)
-        {
-            var nextCamera = _customCameraStack.Peek();
-            if (nextCamera == null) nextCamera = Locator.GetPlayerCamera();
+			var profile = Locator.GetPlayerCamera()?.gameObject?.GetComponent<PostProcessingBehaviour>()?.profile;
+			if (profile != null)
+			{
+				var _postProcessiong = cameraObject.AddComponent<PostProcessingBehaviour>();
+				_postProcessiong.profile = profile;
+			}
+
+			// CopyFrom will overwrite the transform stuff which is annoying
+			var rot = camera.transform.rotation;
+			var pos = camera.transform.position;
+			camera.CopyFrom(Locator.GetPlayerCamera().mainCamera);
+			camera.transform.rotation = rot;
+			camera.transform.position = pos;
+
+			cameraObject.name = name;
+
+			cameraObject.SetActive(true);
+		}
+		catch (Exception ex)
+		{
+			Util.WriteError($"Could not initialize camera [{OWCamera?.name}] : {ex.Message}, {ex.StackTrace}");
+		}
+	}
+
+	public void ExitCamera(OWCamera OWCamera)
+	{
+		CameraStack.Remove(OWCamera);
+
+		if (Locator.GetActiveCamera() == OWCamera)
+		{
+			var nextCamera = CameraStack.Peek();
+			if (nextCamera == null) nextCamera = Locator.GetPlayerCamera();
 
 			GlobalMessenger<OWCamera>.FireEvent("SwitchActiveCamera", nextCamera);
 			OWCamera.mainCamera.enabled = false;
 			nextCamera.mainCamera.enabled = true;
 		}
-    }
+	}
 
-    public void EnterCamera(OWCamera OWCamera)
-    {
-        var currentCamera = Locator.GetActiveCamera();
+	public void EnterCamera(OWCamera OWCamera)
+	{
+		var currentCamera = Locator.GetActiveCamera();
 
-        if (currentCamera != OWCamera)
+		if (currentCamera != OWCamera)
 		{
-            try
-            {
+			try
+			{
 				GlobalMessenger<OWCamera>.FireEvent("SwitchActiveCamera", OWCamera);
 			}
-            catch(Exception)
-            {
-                _fireEventNextTick = true;
-                _nextCamera = OWCamera;
+			catch (Exception)
+			{
+				_fireEventNextTick = true;
+				_nextCamera = OWCamera;
 			}
 
 			currentCamera.mainCamera.enabled = false;
@@ -213,18 +225,18 @@ public class CommonCameraUtil : ModBehaviour
 		}
 	}
 
-    public void Update()
-    {
-        if (_fireEventNextTick)
-        {
+	public void Update()
+	{
+		if (_fireEventNextTick)
+		{
 			GlobalMessenger<OWCamera>.FireEvent("SwitchActiveCamera", _nextCamera);
-            _nextCamera = null;
-            _fireEventNextTick = false;
+			_nextCamera = null;
+			_fireEventNextTick = false;
 		}
-    }
+	}
 
 
 	public static bool UsingCustomCamera() => Instance._usingCustomCamera;
 
-    public static bool IsCustomCamera(OWCamera camera) => Instance._customCameras.Contains(camera);
+	public static bool IsCustomCamera(OWCamera camera) => Instance._customCameras.Contains(camera);
 }
