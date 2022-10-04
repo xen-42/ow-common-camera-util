@@ -6,7 +6,6 @@ using OWML.ModHelper;
 using OWML.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
@@ -88,7 +87,7 @@ public class CommonCameraUtil : ModBehaviour
             _uninitializedCameras.Remove(camera);
         }
 
-        if (camera.name == "RemoteViewerCamera" || camera.name == "MapCamera")
+        if (camera.name == "MapCamera")
         {
 			CameraStack.Add(camera);
 			_usingCustomCamera = false;
