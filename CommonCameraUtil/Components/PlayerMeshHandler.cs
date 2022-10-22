@@ -56,6 +56,9 @@ public class PlayerMeshHandler : MonoBehaviour
 
 		_helmet2D = GameObject.FindObjectOfType<HUDHelmetAnimator>()?.gameObject;
 
+		_helmetMesh = Util.Find("Player_Body/Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_Helmet").gameObject;
+		_head = Util.Find("Player_Body/Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_Head").gameObject;
+
 		try
 		{
 			var campfire = GameObject.Find("/Moon_Body/Sector_THM/Interactables_THM/Effects_HEA_Campfire/Props_HEA_Campfire/Campfire_Flames");
@@ -143,8 +146,6 @@ public class PlayerMeshHandler : MonoBehaviour
 		{
 			Util.WriteWarning("Couldn't load custom assets.");
 		}
-
-		SetHeadVisible();
 	}
 
 	private void OnHazardsUpdated()
@@ -170,13 +171,12 @@ public class PlayerMeshHandler : MonoBehaviour
 
 	private void OnSwitchActiveCamera(OWCamera camera)
 	{
-		Util.Write($"Switched to {camera}");
+		Util.Write($"Switched to {camera} : {(CommonCameraUtil.UsingCustomCamera() ? "custom camera" : "stock camera")}");
 		if (CommonCameraUtil.UsingCustomCamera())
 		{
+			SetHeadVisibility(true);
 			SetArmVisibility(true);
 			ShowUI(false);
-
-			SetHeadVisible();
 
 			_roastingStickArm.enabled = false;
 			_roastingStickNoSuit.enabled = false;
@@ -185,6 +185,7 @@ public class PlayerMeshHandler : MonoBehaviour
 		}
 		else
 		{
+			SetHeadVisibility(false);
 			SetArmVisibility(!_isToolHeld);
 			ShowUI(true);
 
@@ -219,40 +220,26 @@ public class PlayerMeshHandler : MonoBehaviour
 		}
 	}
 
-	private void OnRemoveHelmet()
-	{
-		SetHeadVisible();
-	}
+	private void OnRemoveHelmet() => SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
 
-	private void OnPutOnHelmet()
-	{
-		SetHeadVisible();
-	}
+	private void OnPutOnHelmet() => SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
 
-	private void SetHeadVisible()
+	private void SetHeadVisibility(bool visible)
 	{
-		if (Locator.GetPlayerSuit().IsWearingHelmet())
+		try
 		{
-			if (_helmetMesh == null)
+			if (Locator.GetPlayerSuit().IsWearingHelmet())
 			{
-				_helmetMesh = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_Helmet").gameObject;
-				_helmetMesh.layer = OWLayer.Default;
+				_helmetMesh.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
+			}
+			else
+			{
+				_head.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
 			}
 		}
-		else
+		catch (Exception)
 		{
-			if (_head == null)
-			{
-				try
-				{
-					_head = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_Head").gameObject;
-					_head.layer = OWLayer.Default;
-				}
-				catch (Exception)
-				{
-					Util.WriteWarning("Couldn't find players head.");
-				}
-			}
+			Util.WriteWarning("Couldn't find players head.");
 		}
 	}
 
