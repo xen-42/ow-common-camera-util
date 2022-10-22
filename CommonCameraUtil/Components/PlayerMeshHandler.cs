@@ -15,7 +15,7 @@ public class PlayerMeshHandler : MonoBehaviour
 	private int _propID_Fade;
 
 	// Body parts
-	private GameObject _helmetMesh, _helmet2D, _head;
+	private GameObject _helmetMesh, _helmet2D, _head, _ghostHead;
 
 	// Hand holding marshmallow stick
 	private MeshRenderer _roastingStickArm, _roastingStickNoSuit;
@@ -85,6 +85,11 @@ public class PlayerMeshHandler : MonoBehaviour
 
 		_propID_Fade = Shader.PropertyToID("_Fade");
 
+		LoadPlayerGhost();
+	}
+
+	private void LoadPlayerGhost()
+	{
 		try
 		{
 			if (assetBundle == null)
@@ -108,13 +113,13 @@ public class PlayerMeshHandler : MonoBehaviour
 			var leftHandRoot = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Rig_v01:Traveller_Trajectory_Jnt/Traveller_Rig_v01:Traveller_ROOT_Jnt/Traveller_Rig_v01:Traveller_Spine_01_Jnt/Traveller_Rig_v01:Traveller_Spine_02_Jnt/Traveller_Rig_v01:Traveller_Spine_Top_Jnt/Traveller_Rig_v01:Traveller_LF_Arm_Clavicle_Jnt/Traveller_Rig_v01:Traveller_LF_Arm_Shoulder_Jnt/Traveller_Rig_v01:Traveller_LF_Arm_Elbow_Jnt/Traveller_Rig_v01:Traveller_LF_Arm_Wrist_Jnt");
 			var rightHandRoot = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Rig_v01:Traveller_Trajectory_Jnt/Traveller_Rig_v01:Traveller_ROOT_Jnt/Traveller_Rig_v01:Traveller_Spine_01_Jnt/Traveller_Rig_v01:Traveller_Spine_02_Jnt/Traveller_Rig_v01:Traveller_Spine_Top_Jnt/Traveller_Rig_v01:Traveller_RT_Arm_Clavicle_Jnt/Traveller_Rig_v01:Traveller_RT_Arm_Shoulder_Jnt/Traveller_Rig_v01:Traveller_RT_Arm_Elbow_Jnt/Traveller_Rig_v01:Traveller_RT_Arm_Wrist_Jnt");
 
-			var head = ghost.transform.Find("Head");
+			_ghostHead = ghost.transform.Find("Head").gameObject;
 			var eyes = ghost.transform.Find("Eyes");
-			eyes.transform.parent = head;
-			head.transform.parent = headRoot;
-			head.transform.localRotation = Quaternion.Euler(0, 0, 90);
-			head.transform.localScale = 1.25f * Vector3.one;
-			head.transform.localPosition = new Vector3(2, -1, 0);
+			eyes.transform.parent = _ghostHead.transform;
+			_ghostHead.transform.parent = headRoot;
+			_ghostHead.transform.localRotation = Quaternion.Euler(0, 0, 90);
+			_ghostHead.transform.localScale = 1.25f * Vector3.one;
+			_ghostHead.transform.localPosition = new Vector3(2, -1, 0);
 
 			var torso = ghost.transform.Find("Torso");
 			torso.transform.parent = backRoot;
@@ -135,7 +140,7 @@ public class PlayerMeshHandler : MonoBehaviour
 			leftHand.transform.localPosition = Vector3.zero;
 
 			eyes.gameObject.layer = OWLayer.DreamSimulation;
-			head.gameObject.layer = OWLayer.DreamSimulation;
+			_ghostHead.gameObject.layer = OWLayer.DreamSimulation;
 			torso.gameObject.layer = OWLayer.DreamSimulation;
 			rightHand.gameObject.layer = OWLayer.DreamSimulation;
 			leftHand.gameObject.layer = OWLayer.DreamSimulation;
@@ -236,6 +241,8 @@ public class PlayerMeshHandler : MonoBehaviour
 			{
 				_head.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
 			}
+
+			_ghostHead?.SetActive(visible);
 		}
 		catch (Exception)
 		{
