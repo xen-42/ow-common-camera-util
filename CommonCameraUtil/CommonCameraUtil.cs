@@ -2,6 +2,7 @@
 using CommonCameraUtil.Components;
 using CommonCameraUtil.Handlers;
 using HarmonyLib;
+using OWML.Common;
 using OWML.ModHelper;
 using OWML.Utils;
 using System;
@@ -33,10 +34,9 @@ public class CommonCameraUtil : ModBehaviour
     private bool _fireEventNextTick = false;
     private OWCamera _nextCamera = null;
 
-    public override object GetApi()
-    {
-        return new CommonCameraAPI();
-    }
+    private IDayDreamAPI _daydream;
+
+    public override object GetApi() => new CommonCameraAPI();
 
     private void Awake()
     {
@@ -45,8 +45,23 @@ public class CommonCameraUtil : ModBehaviour
 
     private void Start()
     {
-        // Patches
-        Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+        if (ModHelper.Interaction.TryGetMod("Raicuparta.NomaiVR") != null)
+        {
+            Util.Write($"NomaiVR and {nameof(CommonCameraUtil)} are incompatible, disabling.");
+            enabled = false;
+            return;
+        }
+
+		_daydream = ModHelper.Interaction.TryGetModApi<IDayDreamAPI>("xen.DayDream");
+        Util.Write($"DayDream is {(_daydream == null ? "not installed" : "installed")}");
+
+        if (_daydream != null)
+        {
+            Util.Write($"DayDream is installed");
+        }
+
+		// Patches
+		Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
         GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
@@ -110,13 +125,9 @@ public class CommonCameraUtil : ModBehaviour
 	public void RegisterCustomCamera(OWCamera camera)
     {
         // We add our camera to the list of cameras in daydream so it shows the sky correctly too
-        try
-        {
-            ModHelper.Interaction.TryGetMod("xen.DayDream").GetValue<List<OWCamera>>("Cameras").Add(camera);
-        }
-        catch { }
+        if (_daydream != null) _daydream.RegisterCamera(camera);
 
-        _customCameras.Add(camera);
+		_customCameras.Add(camera);
     }
 
     public (OWCamera, Camera) CreateCustomCamera(string name, Action<OWCamera> postInit = null)

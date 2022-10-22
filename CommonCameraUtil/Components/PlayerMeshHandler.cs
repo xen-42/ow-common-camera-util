@@ -15,7 +15,7 @@ public class PlayerMeshHandler : MonoBehaviour
 	private int _propID_Fade;
 
 	// Body parts
-	private GameObject _helmetMesh, _helmet2D, _head;
+	private GameObject _helmetMesh, _helmet2D, _head, _ghostHead;
 
 	// Hand holding marshmallow stick
 	private MeshRenderer _roastingStickArm, _roastingStickNoSuit;
@@ -56,6 +56,9 @@ public class PlayerMeshHandler : MonoBehaviour
 
 		_helmet2D = GameObject.FindObjectOfType<HUDHelmetAnimator>()?.gameObject;
 
+		_helmetMesh = Util.Find("Player_Body/Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_Helmet").gameObject;
+		_head = Util.Find("Player_Body/Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_Head").gameObject;
+
 		try
 		{
 			var campfire = GameObject.Find("/Moon_Body/Sector_THM/Interactables_THM/Effects_HEA_Campfire/Props_HEA_Campfire/Campfire_Flames");
@@ -82,6 +85,11 @@ public class PlayerMeshHandler : MonoBehaviour
 
 		_propID_Fade = Shader.PropertyToID("_Fade");
 
+		LoadPlayerGhost();
+	}
+
+	private void LoadPlayerGhost()
+	{
 		try
 		{
 			if (assetBundle == null)
@@ -105,13 +113,13 @@ public class PlayerMeshHandler : MonoBehaviour
 			var leftHandRoot = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Rig_v01:Traveller_Trajectory_Jnt/Traveller_Rig_v01:Traveller_ROOT_Jnt/Traveller_Rig_v01:Traveller_Spine_01_Jnt/Traveller_Rig_v01:Traveller_Spine_02_Jnt/Traveller_Rig_v01:Traveller_Spine_Top_Jnt/Traveller_Rig_v01:Traveller_LF_Arm_Clavicle_Jnt/Traveller_Rig_v01:Traveller_LF_Arm_Shoulder_Jnt/Traveller_Rig_v01:Traveller_LF_Arm_Elbow_Jnt/Traveller_Rig_v01:Traveller_LF_Arm_Wrist_Jnt");
 			var rightHandRoot = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Rig_v01:Traveller_Trajectory_Jnt/Traveller_Rig_v01:Traveller_ROOT_Jnt/Traveller_Rig_v01:Traveller_Spine_01_Jnt/Traveller_Rig_v01:Traveller_Spine_02_Jnt/Traveller_Rig_v01:Traveller_Spine_Top_Jnt/Traveller_Rig_v01:Traveller_RT_Arm_Clavicle_Jnt/Traveller_Rig_v01:Traveller_RT_Arm_Shoulder_Jnt/Traveller_Rig_v01:Traveller_RT_Arm_Elbow_Jnt/Traveller_Rig_v01:Traveller_RT_Arm_Wrist_Jnt");
 
-			var head = ghost.transform.Find("Head");
+			_ghostHead = ghost.transform.Find("Head").gameObject;
 			var eyes = ghost.transform.Find("Eyes");
-			eyes.transform.parent = head;
-			head.transform.parent = headRoot;
-			head.transform.localRotation = Quaternion.Euler(0, 0, 90);
-			head.transform.localScale = 1.25f * Vector3.one;
-			head.transform.localPosition = new Vector3(2, -1, 0);
+			eyes.transform.parent = _ghostHead.transform;
+			_ghostHead.transform.parent = headRoot;
+			_ghostHead.transform.localRotation = Quaternion.Euler(0, 0, 90);
+			_ghostHead.transform.localScale = 1.25f * Vector3.one;
+			_ghostHead.transform.localPosition = new Vector3(2, -1, 0);
 
 			var torso = ghost.transform.Find("Torso");
 			torso.transform.parent = backRoot;
@@ -132,7 +140,7 @@ public class PlayerMeshHandler : MonoBehaviour
 			leftHand.transform.localPosition = Vector3.zero;
 
 			eyes.gameObject.layer = OWLayer.DreamSimulation;
-			head.gameObject.layer = OWLayer.DreamSimulation;
+			_ghostHead.gameObject.layer = OWLayer.DreamSimulation;
 			torso.gameObject.layer = OWLayer.DreamSimulation;
 			rightHand.gameObject.layer = OWLayer.DreamSimulation;
 			leftHand.gameObject.layer = OWLayer.DreamSimulation;
@@ -143,8 +151,6 @@ public class PlayerMeshHandler : MonoBehaviour
 		{
 			Util.WriteWarning("Couldn't load custom assets.");
 		}
-
-		SetHeadVisible();
 	}
 
 	private void OnHazardsUpdated()
@@ -170,13 +176,12 @@ public class PlayerMeshHandler : MonoBehaviour
 
 	private void OnSwitchActiveCamera(OWCamera camera)
 	{
-		Util.Write($"Switched to {camera}");
+		Util.Write($"Switched to {camera} : {(CommonCameraUtil.UsingCustomCamera() ? "custom camera" : "stock camera")}");
 		if (CommonCameraUtil.UsingCustomCamera())
 		{
+			SetHeadVisibility(true);
 			SetArmVisibility(true);
 			ShowUI(false);
-
-			SetHeadVisible();
 
 			_roastingStickArm.enabled = false;
 			_roastingStickNoSuit.enabled = false;
@@ -185,6 +190,7 @@ public class PlayerMeshHandler : MonoBehaviour
 		}
 		else
 		{
+			SetHeadVisibility(false);
 			SetArmVisibility(!_isToolHeld);
 			ShowUI(true);
 
@@ -219,40 +225,28 @@ public class PlayerMeshHandler : MonoBehaviour
 		}
 	}
 
-	private void OnRemoveHelmet()
-	{
-		SetHeadVisible();
-	}
+	private void OnRemoveHelmet() => SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
 
-	private void OnPutOnHelmet()
-	{
-		SetHeadVisible();
-	}
+	private void OnPutOnHelmet() => SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
 
-	private void SetHeadVisible()
+	private void SetHeadVisibility(bool visible)
 	{
-		if (Locator.GetPlayerSuit().IsWearingHelmet())
+		try
 		{
-			if (_helmetMesh == null)
+			if (Locator.GetPlayerSuit().IsWearingHelmet())
 			{
-				_helmetMesh = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_Helmet").gameObject;
-				_helmetMesh.layer = OWLayer.Default;
+				_helmetMesh.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
 			}
+			else
+			{
+				_head.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
+			}
+
+			_ghostHead?.SetActive(visible);
 		}
-		else
+		catch (Exception)
 		{
-			if (_head == null)
-			{
-				try
-				{
-					_head = Locator.GetPlayerTransform().Find("Traveller_HEA_Player_v2/player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_Head").gameObject;
-					_head.layer = OWLayer.Default;
-				}
-				catch (Exception)
-				{
-					Util.WriteWarning("Couldn't find players head.");
-				}
-			}
+			Util.WriteWarning("Couldn't find players head.");
 		}
 	}
 
