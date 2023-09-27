@@ -102,7 +102,9 @@ public class CommonCameraUtil : ModBehaviour
             _uninitializedCameras.Remove(camera);
         }
 
-        if (camera.name == "MapCamera")
+		// Have to deal with certain annoying stock cameras so we track them too in the stack
+		// These cameras are handled in patches
+        if (camera.name == "MapCamera" || camera.name == "LandingCamera")
         {
 			CameraStack.Add(camera);
 			_usingCustomCamera = false;
@@ -125,7 +127,7 @@ public class CommonCameraUtil : ModBehaviour
 	public void RegisterCustomCamera(OWCamera camera)
     {
         // We add our camera to the list of cameras in daydream so it shows the sky correctly too
-        if (_daydream != null) _daydream.RegisterCamera(camera);
+        _daydream?.RegisterCamera(camera);
 
 		_customCameras.Add(camera);
     }

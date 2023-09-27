@@ -177,6 +177,13 @@ public class PlayerMeshHandler : MonoBehaviour
 	private void OnSwitchActiveCamera(OWCamera camera)
 	{
 		Util.Write($"Switched to {camera} : {(CommonCameraUtil.UsingCustomCamera() ? "custom camera" : "stock camera")}");
+
+		if (camera.name == "LandingCamera")
+		{
+			// Fake camera, ignore it
+			return;
+		}
+
 		if (CommonCameraUtil.UsingCustomCamera())
 		{
 			SetHeadVisibility(true);
