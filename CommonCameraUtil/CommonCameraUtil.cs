@@ -2,6 +2,7 @@
 using CommonCameraUtil.Components;
 using CommonCameraUtil.Handlers;
 using HarmonyLib;
+using HatchlingOutfit;
 using OWML.Common;
 using OWML.ModHelper;
 using OWML.Utils;
@@ -35,6 +36,7 @@ public class CommonCameraUtil : ModBehaviour
     private OWCamera _nextCamera = null;
 
     private IDayDreamAPI _daydream;
+    public IHatchlingOutfit _hatchlingOutfit;
 
     public override object GetApi() => new CommonCameraAPI();
 
@@ -55,13 +57,21 @@ public class CommonCameraUtil : ModBehaviour
 		_daydream = ModHelper.Interaction.TryGetModApi<IDayDreamAPI>("xen.DayDream");
         Util.Write($"DayDream is {(_daydream == null ? "not installed" : "installed")}");
 
+        _hatchlingOutfit = ModHelper.Interaction.TryGetModApi<IHatchlingOutfit>("Owen013.HatchlingOutfit");
+        Util.Write($"Hatchling Outfitter is {(_hatchlingOutfit == null ? "not installed" : "installed")}");
+
         if (_daydream != null)
         {
             Util.Write($"DayDream is installed");
         }
 
-		// Patches
-		Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+        if (_hatchlingOutfit != null)
+        {
+            Util.Write($"Hatchling Outfitter is installed");
+        }
+
+        // Patches
+        Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
         GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
