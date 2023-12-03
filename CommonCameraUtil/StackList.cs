@@ -7,7 +7,7 @@ public class StackList<T>
 {
 	private List<T> _list;
 
-	public StackList() 
+	public StackList()
 	{
 		_list = new List<T>();
 	}
@@ -31,7 +31,7 @@ public class StackList<T>
 		if (_list.Contains(obj))
 			_list.Remove(obj);
 		_list.Add(obj);
-	} 
+	}
 
 	public T Peek() => _list.LastOrDefault();
 
