@@ -1,4 +1,4 @@
-﻿namespace HatchlingOutfit
+﻿namespace CommonCameraUtil.API
 {
     public interface IHatchlingOutfit
     {

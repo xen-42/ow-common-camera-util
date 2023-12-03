@@ -1,4 +1,4 @@
-﻿using HatchlingOutfit;
+﻿using CommonCameraUtil.API;
 using System;
 using UnityEngine;
 
@@ -239,14 +239,14 @@ public class PlayerMeshHandler : MonoBehaviour
 
 	private void SetHeadVisibility(bool visible)
 	{
-        IHatchlingOutfit hatchlingOutfit = CommonCameraUtil.Instance._hatchlingOutfit;
+		IHatchlingOutfit hatchlingOutfit = CommonCameraUtil.Instance.HatchlingOutfit;
 		try
 		{
 			bool wearingHelmet;
 			if (hatchlingOutfit != null) wearingHelmet = hatchlingOutfit.GetPlayerHelmeted();
 			else wearingHelmet = Locator.GetPlayerSuit().IsWearingHelmet();
 
-            if (wearingHelmet)
+			if (wearingHelmet)
 			{
 				_helmetMesh.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
 			}
