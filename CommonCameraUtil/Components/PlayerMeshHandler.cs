@@ -44,11 +44,10 @@ public class PlayerMeshHandler : MonoBehaviour
 	public void Update()
 	{
         IHatchlingOutfit hatchlingOutfit = CommonCameraUtil.Instance.HatchlingOutfit;
-		try
+		if (hatchlingOutfit != null && wearingHelmet != hatchlingOutfit?.GetPlayerHelmeted())
 		{
-			if (wearingHelmet != hatchlingOutfit.GetPlayerHelmeted()) SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
+            SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
         }
-		catch (Exception) { }
     }
 
 	public void OnDestroy()
