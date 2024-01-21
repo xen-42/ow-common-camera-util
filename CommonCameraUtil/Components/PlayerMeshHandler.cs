@@ -12,6 +12,7 @@ public class PlayerMeshHandler : MonoBehaviour
 	private HazardDetector _hazardDetector;
 	private float fade = 0f;
 	private bool inFire = false;
+	private bool wearingHelmet = false;
 
 	private int _propID_Fade;
 
@@ -39,6 +40,14 @@ public class PlayerMeshHandler : MonoBehaviour
 
 		_animController = GetComponentInChildren<PlayerAnimController>();
 	}
+
+	public void Update()
+	{
+		if (wearingHelmet != CommonCameraUtil.Instance.HatchlingOutfit?.GetPlayerHelmeted())
+		{
+            SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
+        }
+    }
 
 	public void OnDestroy()
 	{
@@ -242,9 +251,7 @@ public class PlayerMeshHandler : MonoBehaviour
 		IHatchlingOutfit hatchlingOutfit = CommonCameraUtil.Instance.HatchlingOutfit;
 		try
 		{
-			bool wearingHelmet;
-			if (hatchlingOutfit != null) wearingHelmet = hatchlingOutfit.GetPlayerHelmeted();
-			else wearingHelmet = Locator.GetPlayerSuit().IsWearingHelmet();
+			wearingHelmet = (hatchlingOutfit != null) ? hatchlingOutfit.GetPlayerHelmeted() : Locator.GetPlayerSuit().IsWearingHelmet();
 
 			if (wearingHelmet)
 			{
