@@ -244,7 +244,8 @@ public class PlayerMeshHandler : MonoBehaviour
 		{
 			bool wearingHelmet;
 			if (hatchlingOutfit != null) wearingHelmet = hatchlingOutfit.GetPlayerHelmeted();
-			else wearingHelmet = Locator.GetPlayerSuit().IsWearingHelmet();
+			// Check wearing suit not wearing helmet for future pikpik mod compat eyes of the past or wtv
+			else wearingHelmet = Locator.GetPlayerSuit().IsWearingSuit();
 
 			if (wearingHelmet)
 			{
