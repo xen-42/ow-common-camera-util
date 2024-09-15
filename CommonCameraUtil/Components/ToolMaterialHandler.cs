@@ -67,9 +67,9 @@ public class ToolMaterialHandler : MonoBehaviour
 
 	public void OnToolUnequiped(PlayerTool tool)
 	{
-        // Put them back to normal when unequiping
-        //SetToolMaterials(false);
-        _heldTool = null;
+		// Put them back to normal when unequiping
+		//SetToolMaterials(false);
+		_heldTool = null;
 	}
 
 	public void OnSwitchActiveCamera(OWCamera camera)
@@ -81,8 +81,8 @@ public class ToolMaterialHandler : MonoBehaviour
 		else
 		{
 			SetToolMaterials(false);
-            // Double check we're still holding it
-            if (_heldTool != null && !_heldTool.IsEquipped()) _heldTool = null;
+			// Double check we're still holding it
+			if (_heldTool != null && !_heldTool.IsEquipped()) _heldTool = null;
 		}
 		if (_heldTool != null)
 		{
@@ -119,8 +119,8 @@ public class ToolMaterialHandler : MonoBehaviour
 	private void UpdateToolScale(PlayerTool tool)
 	{
 		if (resizingExemptTools.Contains(tool.name)) return;
-        tool.transform.localScale = CommonCameraUtil.UsingCustomCamera() ? new Vector3(2, 2, 2) : Vector3.one;
-    }
+		tool.transform.localScale = CommonCameraUtil.UsingCustomCamera() ? new Vector3(2, 2, 2) : Vector3.one;
+	}
 
 	public void Update()
 	{

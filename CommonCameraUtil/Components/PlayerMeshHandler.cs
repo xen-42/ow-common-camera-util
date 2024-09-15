@@ -46,9 +46,9 @@ public class PlayerMeshHandler : MonoBehaviour
 	{
 		if (wearingHelmet != CommonCameraUtil.Instance.HatchlingOutfit?.GetPlayerHelmeted())
 		{
-            SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
-        }
-    }
+			SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
+		}
+	}
 
 	public void OnDestroy()
 	{
