@@ -12,6 +12,7 @@ public class PlayerMeshHandler : MonoBehaviour
 	private HazardDetector _hazardDetector;
 	private float fade = 0f;
 	private bool inFire = false;
+	private bool wearingHelmet = false;
 
 	private int _propID_Fade;
 
@@ -37,7 +38,16 @@ public class PlayerMeshHandler : MonoBehaviour
 		GlobalMessenger.AddListener("PutOnHelmet", OnPutOnHelmet);
 		GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
-		_animController = GetComponentInChildren<PlayerAnimController>();
+		// Have to be precise about the path because Ultimate Skin Changer adds another PlayerAnimController
+		_animController = transform.Find("Traveller_HEA_Player_v2").GetComponent<PlayerAnimController>();
+	}
+
+	public void Update()
+	{
+		if (wearingHelmet != CommonCameraUtil.Instance.HatchlingOutfit?.GetPlayerHelmeted())
+		{
+			SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
+		}
 	}
 
 	public void OnDestroy()
@@ -225,11 +235,18 @@ public class PlayerMeshHandler : MonoBehaviour
 
 	private void SetArmVisibility(bool visible)
 	{
-		_animController._probeOnlyLayer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
-
-		foreach (var arm in _animController._rightArmObjects)
+		try
 		{
-			arm.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
+			_animController._probeOnlyLayer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
+
+			foreach (var arm in _animController._rightArmObjects)
+			{
+				arm.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
+			}
+		}
+		catch (Exception e)
+		{
+			Util.WriteError($"{e}");
 		}
 	}
 
@@ -242,10 +259,7 @@ public class PlayerMeshHandler : MonoBehaviour
 		IHatchlingOutfit hatchlingOutfit = CommonCameraUtil.Instance.HatchlingOutfit;
 		try
 		{
-			bool wearingHelmet;
-			if (hatchlingOutfit != null) wearingHelmet = hatchlingOutfit.GetPlayerHelmeted();
-			// Check wearing suit not wearing helmet for future pikpik mod compat eyes of the past or wtv
-			else wearingHelmet = Locator.GetPlayerSuit().IsWearingSuit();
+			wearingHelmet = (hatchlingOutfit != null) ? hatchlingOutfit.GetPlayerHelmeted() : Locator.GetPlayerSuit().IsWearingHelmet();
 
 			if (wearingHelmet)
 			{
@@ -262,6 +276,8 @@ public class PlayerMeshHandler : MonoBehaviour
 		{
 			Util.WriteWarning("Couldn't find players head.");
 		}
+
+		CommonCameraUtil.Instance.HeadVisibilityChanged.Invoke(visible);
 	}
 
 	private void ShowUI(bool visible)
