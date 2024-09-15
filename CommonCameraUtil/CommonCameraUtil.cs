@@ -24,6 +24,7 @@ public class CommonCameraUtil : ModBehaviour
 	public class CameraEvent<T> : UnityEvent<T> { }
 	public UnityEvent<PlayerTool> EquipTool = new CameraEvent<PlayerTool>();
 	public UnityEvent<PlayerTool> UnequipTool = new CameraEvent<PlayerTool>();
+	public UnityEvent<bool> HeadVisibilityChanged = new CameraEvent<bool>();
 
 	private Dictionary<OWCamera, Action<OWCamera>> _uninitializedCameras = new();
 

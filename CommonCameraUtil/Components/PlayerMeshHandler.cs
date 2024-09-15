@@ -38,7 +38,8 @@ public class PlayerMeshHandler : MonoBehaviour
 		GlobalMessenger.AddListener("PutOnHelmet", OnPutOnHelmet);
 		GlobalMessenger<OWCamera>.AddListener("SwitchActiveCamera", OnSwitchActiveCamera);
 
-		_animController = GetComponentInChildren<PlayerAnimController>();
+		// Have to be precise about the path because Ultimate Skin Changer adds another PlayerAnimController
+		_animController = transform.Find("Traveller_HEA_Player_v2").GetComponent<PlayerAnimController>();
 	}
 
 	public void Update()
@@ -234,11 +235,18 @@ public class PlayerMeshHandler : MonoBehaviour
 
 	private void SetArmVisibility(bool visible)
 	{
-		_animController._probeOnlyLayer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
-
-		foreach (var arm in _animController._rightArmObjects)
+		try
 		{
-			arm.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
+			_animController._probeOnlyLayer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
+
+			foreach (var arm in _animController._rightArmObjects)
+			{
+				arm.layer = visible ? OWLayer.Default : OWLayer.VisibleToProbe;
+			}
+		}
+		catch (Exception e)
+		{
+			Util.WriteError($"{e}");
 		}
 	}
 
@@ -268,6 +276,8 @@ public class PlayerMeshHandler : MonoBehaviour
 		{
 			Util.WriteWarning("Couldn't find players head.");
 		}
+
+		CommonCameraUtil.Instance.HeadVisibilityChanged.Invoke(visible);
 	}
 
 	private void ShowUI(bool visible)
