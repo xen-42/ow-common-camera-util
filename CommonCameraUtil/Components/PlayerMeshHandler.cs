@@ -12,6 +12,7 @@ public class PlayerMeshHandler : MonoBehaviour
 	private HazardDetector _hazardDetector;
 	private float fade = 0f;
 	private bool inFire = false;
+	private bool wearingHelmet = false;
 
 	private int _propID_Fade;
 
@@ -39,6 +40,14 @@ public class PlayerMeshHandler : MonoBehaviour
 
 		// Have to be precise about the path because Ultimate Skin Changer adds another PlayerAnimController
 		_animController = transform.Find("Traveller_HEA_Player_v2").GetComponent<PlayerAnimController>();
+	}
+
+	public void Update()
+	{
+		if (wearingHelmet != CommonCameraUtil.Instance.HatchlingOutfit?.GetPlayerHelmeted())
+		{
+			SetHeadVisibility(CommonCameraUtil.UsingCustomCamera());
+		}
 	}
 
 	public void OnDestroy()
@@ -250,10 +259,7 @@ public class PlayerMeshHandler : MonoBehaviour
 		IHatchlingOutfit hatchlingOutfit = CommonCameraUtil.Instance.HatchlingOutfit;
 		try
 		{
-			bool wearingHelmet;
-			if (hatchlingOutfit != null) wearingHelmet = hatchlingOutfit.GetPlayerHelmeted();
-			// Check wearing suit not wearing helmet for future pikpik mod compat eyes of the past or wtv
-			else wearingHelmet = Locator.GetPlayerSuit().IsWearingSuit();
+			wearingHelmet = (hatchlingOutfit != null) ? hatchlingOutfit.GetPlayerHelmeted() : Locator.GetPlayerSuit().IsWearingHelmet();
 
 			if (wearingHelmet)
 			{

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using UnityEngine;
+using static UnityEngine.GridBrushBase;
 
 namespace CommonCameraUtil.Handlers;
 
@@ -61,7 +62,7 @@ public class ToolMaterialHandler : MonoBehaviour
 		else SetToolMaterials(true);
 
 		// We make some of the models look larger for the 3rd person view
-		if (!resizingExemptTools.Contains(tool.name)) tool.transform.localScale = new Vector3(2, 2, 2);
+		UpdateToolScale(tool);
 	}
 
 	public void OnToolUnequiped(PlayerTool tool)
@@ -82,6 +83,10 @@ public class ToolMaterialHandler : MonoBehaviour
 			SetToolMaterials(false);
 			// Double check we're still holding it
 			if (_heldTool != null && !_heldTool.IsEquipped()) _heldTool = null;
+		}
+		if (_heldTool != null)
+		{
+			UpdateToolScale(_heldTool);
 		}
 	}
 
@@ -109,6 +114,12 @@ public class ToolMaterialHandler : MonoBehaviour
 				else if (!thirdPerson && m.renderQueue < 2000) m.renderQueue += 2000;
 			}
 		}
+	}
+
+	private void UpdateToolScale(PlayerTool tool)
+	{
+		if (resizingExemptTools.Contains(tool.name)) return;
+		tool.transform.localScale = CommonCameraUtil.UsingCustomCamera() ? new Vector3(2, 2, 2) : Vector3.one;
 	}
 
 	public void Update()
