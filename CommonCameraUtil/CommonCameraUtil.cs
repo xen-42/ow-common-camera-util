@@ -38,6 +38,8 @@ public class CommonCameraUtil : ModBehaviour
 
 	public override object GetApi() => new CommonCameraAPI();
 
+	public static bool VREnabled { get; private set; }
+
 	private void Awake()
 	{
 		Instance = this;
@@ -47,7 +49,8 @@ public class CommonCameraUtil : ModBehaviour
 	{
 		if (ModHelper.Interaction.TryGetMod("Raicuparta.NomaiVR") != null)
 		{
-			Util.Write($"NomaiVR and {nameof(CommonCameraUtil)} are incompatible, disabling.");
+			Util.Write($"NomaiVR and {nameof(CommonCameraUtil)} are incompatible, disabling most functionality (if CCU is installed for NH support, ignore this).");
+			VREnabled = true;
 			enabled = false;
 			return;
 		}
@@ -205,6 +208,8 @@ public class CommonCameraUtil : ModBehaviour
 
 	public void ExitCamera(OWCamera OWCamera)
 	{
+		if (VREnabled) return;
+
 		CameraStack.Remove(OWCamera);
 
 		if (Locator.GetActiveCamera() == OWCamera)
@@ -220,6 +225,8 @@ public class CommonCameraUtil : ModBehaviour
 
 	public void EnterCamera(OWCamera OWCamera)
 	{
+		if (VREnabled) return;
+
 		var currentCamera = Locator.GetActiveCamera();
 
 		if (currentCamera != OWCamera)
